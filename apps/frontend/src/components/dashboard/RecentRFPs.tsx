@@ -26,7 +26,8 @@ const statusConfig: Record<RFPStatus, { label: string; className: string }> = {
   processing:          { label: "Processing",            className: "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20" },
 };
 
-function truncateInfo(info: string, max = 50): string {
+function truncateInfo(info: string | undefined | null, max = 50): string {
+  if (!info) return "Untitled RFP";
   const firstLine = info.split('\n')[0] ?? '';
   return firstLine.length > max ? firstLine.slice(0, max - 1) + '…' : firstLine;
 }

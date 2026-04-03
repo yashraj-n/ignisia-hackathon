@@ -48,12 +48,15 @@ export interface RFPItem {
 export interface RFPStats {
   total: number;
   totalChange?: number;
+  accepted: number;
+  acceptedChange?: number;
   completed: number;
   completedChange?: number;
   rejected: number;
   rejectedChange?: number;
   pending: number;
   pendingChange?: number;
+  processing?: number;
 }
 
 export interface RFPAnalytics {

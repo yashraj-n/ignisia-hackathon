@@ -2,48 +2,20 @@ import React, { useState, useEffect, useRef } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { FileStack, CheckCircle, XCircle, Clock, Plus, Package, FileText, Edit, Loader2 } from 'lucide-react'
-import { cn } from '../lib/utils'
+import { FileStack, CheckCircle, XCircle, Clock, Plus, Package, FileText, Edit } from 'lucide-react'
 
 import { rfpQueries, computeRFPStats } from '../store/queries'
 import type { RFPItem } from '../lib/types'
 
 import UploadModal from '../components/dashboard/UploadModal'
+import RecentRFPs from '../components/dashboard/RecentRFPs'
 import AppLayout from '../layout/AppLayout'
 import { BGPattern } from '../components/ui/bg-pattern'
 
-const statusLabelMap: Record<string, string> = {
-  parsed: 'Awaiting Review',
-  exploring: 'Exploring',
-  explored: 'Explored',
-  summarising: 'Summarising',
-  summarised: 'Summarised',
-  generating_document: 'Generating',
-  completed: 'Completed',
-  parse_rejected: 'Rejected (Parse)',
-  explore_rejected: 'Rejected (Explore)',
-  summarise_rejected: 'Rejected (Summarise)',
-  failed: 'Failed',
-  processing: 'Processing',
-};
 
-function truncateInfo(info: string, max = 40): string {
-  const firstLine = info.split('\n')[0] ?? '';
-  return firstLine.length > max ? firstLine.slice(0, max - 1) + '…' : firstLine;
-}
 
 const BarChart = ({ weekly }: { weekly?: Array<{ day: string; count: number }> }) => {
     const defaultData = [
-        { label: 'Mon', value: 65 },
-        { label: 'Tue', value: 45 },
-        { label: 'Wed', value: 85 },
-        { label: 'Thu', value: 30 },
-        { label: 'Fri', value: 95 },
-        { label: 'Sat', value: 55 },
-        { label: 'Sun', value: 75 },
-    ];
-
-    const data = weekly && weekly.length > 0 ? weekly.map((d) => ({ label: d.day, value: d.count })) : defaultData;
         { label: 'Mon', value: 65 },
         { label: 'Tue', value: 45 },
         { label: 'Wed', value: 85 },
@@ -116,16 +88,16 @@ const BentoItem = ({ className, children }: { className?: string, children: Reac
     );
 };
 
-const PROCESSING_STATUSES = ['exploring', 'summarising', 'generating_document'];
+
 
 export const CyberneticBentoGrid = ({ stats, weekly, rfps, isLoading, onNewBid, onSelectRFP, onEditInventory, onAnalytics }: any) => {
     return (
         <div className="w-full z-10 max-w-7xl mx-auto mt-4">
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-8">Welcome, <span className="text-[#D4AF37]">Acme Corp</span></h1>
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-4 auto-rows-[160px]">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[160px]">
                 
-                {/* Performance Metrics Block - large */}
-                <BentoItem className="col-span-1 md:col-span-3 row-span-2">
+                {/* Performance Metrics — large, left side */}
+                <BentoItem className="col-span-1 md:col-span-2 row-span-2">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                             <Package className="w-8 h-8 text-[#D4AF37]" />
@@ -144,101 +116,45 @@ export const CyberneticBentoGrid = ({ stats, weekly, rfps, isLoading, onNewBid, 
                     </div>
                 </BentoItem>
 
-                {/* Ingestion Pipeline Block - left half */}
-                <BentoItem className="col-span-1 md:col-span-3 row-span-2 overflow-y-auto">
-                    <div className="flex items-center gap-3 mb-6">
-                        <Loader2 className={cn("w-8 h-8", rfps?.some((r: RFPItem) => PROCESSING_STATUSES.includes(r.status)) ? "text-[#D4AF37] animate-spin" : "text-gray-500")} />
-                        <h2 className="text-2xl font-bold text-white">Ingestion Pipeline</h2>
+                {/* Stat Blocks — 2×2 compact in the remaining 2 columns */}
+                <BentoItem className="col-span-1 md:col-span-1">
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-base font-bold text-white">Total</h2>
+                        <FileStack className="w-5 h-5 text-blue-400" />
                     </div>
-                    <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-xl bg-black/20 p-6 text-center">
-                        {rfps?.some((r: RFPItem) => PROCESSING_STATUSES.includes(r.status)) ? (
-                            <div className="space-y-4 w-full">
-                                {rfps.filter((r: RFPItem) => PROCESSING_STATUSES.includes(r.status)).map((rfp: RFPItem) => (
-                                    <div key={rfp.id} className="flex flex-col gap-2 p-4 bg-black/40 border border-[#D4AF37]/30 rounded-lg text-left">
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-semibold text-white truncate">{truncateInfo(rfp.information)}</span>
-                                            <span className="text-[10px] bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase tracking-widest">{statusLabelMap[rfp.status] ?? rfp.status}</span>
-                                        </div>
-                                        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                                            <motion.div 
-                                                initial={{ width: "0%" }}
-                                                animate={{ width: "100%" }}
-                                                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                                                className="bg-[#D4AF37] h-full"
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <CheckCircle className="w-12 h-12 text-green-500/50 mx-auto mb-2" />
-                                <p className="text-xl font-medium text-gray-400">Ingestion pipeline currently free</p>
-                                <p className="text-sm text-gray-600">Ready for next data injection</p>
-                            </div>
-                        )}
-                    </div>
+                    <div className="text-3xl font-bold text-white mt-auto">{isLoading ? '-' : stats?.total || 0}</div>
+                    <p className="text-xs text-gray-500 mt-1">Bids processed</p>
                 </BentoItem>
 
-                {/* Stat Blocks */}
-                <BentoItem className="col-span-1 md:col-span-2">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold text-white">Total Proposals</h2>
-                        <FileStack className="w-6 h-6 text-blue-400" />
+                <BentoItem className="col-span-1 md:col-span-1">
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-base font-bold text-white">Completed</h2>
+                        <CheckCircle className="w-5 h-5 text-green-400" />
                     </div>
-                    <div className="text-5xl font-bold text-white mt-auto">{isLoading ? '-' : stats?.total || 0}</div>
-                    <p className="text-sm text-gray-500 mt-2">Active bids processed</p>
+                    <div className="text-3xl font-bold text-white mt-auto">{isLoading ? '-' : stats?.completed || 0}</div>
+                    <p className="text-xs text-gray-500 mt-1">Successful</p>
                 </BentoItem>
 
-                <BentoItem className="col-span-1 md:col-span-2">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold text-white">Completed</h2>
-                        <CheckCircle className="w-6 h-6 text-green-400" />
+                <BentoItem className="col-span-1 md:col-span-1">
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-base font-bold text-white">Rejected</h2>
+                        <XCircle className="w-5 h-5 text-red-500" />
                     </div>
-                    <div className="text-5xl font-bold text-white mt-auto">{isLoading ? '-' : stats?.completed || 0}</div>
-                    <p className="text-sm text-gray-500 mt-2">Successfully processed</p>
+                    <div className="text-3xl font-bold text-white mt-auto">{isLoading ? '-' : stats?.rejected || 0}</div>
+                    <p className="text-xs text-gray-500 mt-1">Missed</p>
                 </BentoItem>
 
-                <BentoItem className="col-span-1 md:col-span-2">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold text-white">Rejected</h2>
-                        <XCircle className="w-6 h-6 text-red-500" />
+                <BentoItem className="col-span-1 md:col-span-1">
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-base font-bold text-white">Pending</h2>
+                        <Clock className="w-5 h-5 text-[#C0C0C0]" />
                     </div>
-                    <div className="text-5xl font-bold text-white mt-auto">{isLoading ? '-' : stats?.rejected || 0}</div>
-                    <p className="text-sm text-gray-500 mt-2">Missed proposals</p>
-                </BentoItem>
-
-                <BentoItem className="col-span-1 md:col-span-2">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold text-white">Pending</h2>
-                        <Clock className="w-6 h-6 text-[#C0C0C0]" />
-                    </div>
-                    <div className="text-5xl font-bold text-white mt-auto">{isLoading ? '-' : stats?.pending || 0}</div>
-                    <p className="text-sm text-gray-500 mt-2">Awaiting decision</p>
-                </BentoItem>
-                                        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                                            <motion.div 
-                                                initial={{ width: "0%" }}
-                                                animate={{ width: "100%" }}
-                                                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                                                className="bg-[#D4AF37] h-full"
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <CheckCircle className="w-12 h-12 text-green-500/50 mx-auto mb-2" />
-                                <p className="text-xl font-medium text-gray-400">Ingestion pipeline currently free</p>
-                                <p className="text-sm text-gray-600">Ready for next data injection</p>
-                            </div>
-                        )}
-                    </div>
+                    <div className="text-3xl font-bold text-white mt-auto">{isLoading ? '-' : stats?.pending || 0}</div>
+                    <p className="text-xs text-gray-500 mt-1">Awaiting</p>
                 </BentoItem>
 
                 {/* RFPs Block - full width */}
-                <BentoItem className="col-span-1 md:col-span-6 row-span-2 overflow-y-auto">
+                <BentoItem className="col-span-1 md:col-span-4 row-span-2 overflow-y-auto">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <FileText className="w-8 h-8 text-[#C0C0C0]" />
@@ -271,28 +187,6 @@ export const CyberneticBentoGrid = ({ stats, weekly, rfps, isLoading, onNewBid, 
                         ) : (
                             <RecentRFPs rfps={rfps ?? []} onSelectRFP={onSelectRFP} />
                         )}
-                    </div>
-                                ))
-                           ) : rfps?.slice(0, 2).map((rfp: RFPItem) => {
-                                const dateStr = new Date(rfp.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-                                return (
-                                    <div 
-                                        key={rfp.id} 
-                                        onClick={() => onSelectRFP(rfp)}
-                                        className="bg-black/40 border border-white/5 hover:border-[#D4AF37]/50 cursor-pointer rounded-xl p-5 flex flex-col justify-between transition-colors"
-                                    >
-                                       <div>
-                                         <div className="font-semibold text-white truncate text-lg mb-1">{truncateInfo(rfp.information, 50)}</div>
-                                         <div className="text-sm text-gray-400 line-clamp-2">{rfp.source_email ?? "Unknown source"}</div>
-                                       </div>
-                                       <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-                                         <span className="text-xs uppercase tracking-wider text-gray-500 font-medium">{statusLabelMap[rfp.status] ?? rfp.status}</span>
-                                         <span className="text-xs text-gray-600">{dateStr}</span>
-                                       </div>
-                                    </div>
-                                );
-                           })}
-
                     </div>
                 </BentoItem>
             </div>

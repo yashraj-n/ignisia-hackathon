@@ -23,7 +23,8 @@ const statusConfig: Record<RFPStatus, { label: string; color: string; bg: string
   processing:          { label: "Processing",            color: "text-[#3B82F6]", bg: "bg-[#3B82F6]/10", border: "border-[#3B82F6]/20" },
 };
 
-function getDisplayTitle(information: string): string {
+function getDisplayTitle(information: string | undefined | null): string {
+  if (!information) return "Untitled RFP";
   const firstLine = information.split("\n")[0] ?? "";
   return firstLine.length > 60 ? firstLine.slice(0, 57) + "…" : firstLine;
 }

@@ -18,6 +18,8 @@ export function computeRFPStats(rfps: RFPItem[]): RFPStats {
   return {
     total: rfps.length,
     totalChange: 0,
+    accepted: rfps.filter((r) => r.status === 'completed').length,
+    acceptedChange: 0,
     completed: rfps.filter((r) => r.status === 'completed').length,
     completedChange: 0,
     rejected: rfps.filter((r) => rejectedStatuses.includes(r.status)).length,
@@ -52,13 +54,13 @@ export const rfpQueries = {
         }
         return await response.json();
       },
-      refetchInterval: 10000,
-      staleTime: 5000,
+
     }),
   list: () =>
     queryOptions({
       queryKey: ['rfps'],
       queryFn: fetchRFPList,
+
     }),
   detail: (id: string) =>
     queryOptions({
@@ -77,6 +79,53 @@ export const rfpQueries = {
       enabled: !!id,
     }),
 };
+
+
+export async function exploreRfp(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/rfp/${id}/explore`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to trigger explore');
+  }
+}
+
+export async function summariseRfp(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/rfp/${id}/summarise`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to trigger summarise');
+  }
+}
+
+export async function generateDocument(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/rfp/${id}/generate`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to generate document');
+  }
+}
+
+export async function rejectRfp(id: string, reason: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/rfp/${id}/reject`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ reason }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to reject RFP');
+  }
+}
+
 export const inventoryQueries = {
   list: () =>
     queryOptions({
