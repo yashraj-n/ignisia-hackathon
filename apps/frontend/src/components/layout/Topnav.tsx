@@ -1,22 +1,28 @@
-import { Search, Bell, Settings, Layers } from 'lucide-react';
+import { Search, Bell, Settings } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Input } from '../ui/input';
 
 export default function Topnav() {
   return (
     <header className="h-16 border-b border-white/10 glass-panel flex items-center justify-between px-6 shrink-0 z-10 sticky top-0">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#D4AF37] to-amber-600 flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.4)]">
-          <Layers className="text-black w-4 h-4" />
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 flex items-center justify-center">
+          <img src="/logo-bidforge.png" alt="BidForge Logo" className="w-full h-full object-contain" />
         </div>
-        <span className="font-bold text-lg text-white tracking-wide">RFPilot</span>
+        <div className="flex flex-col -gap-1">
+          <span className="font-bold text-lg tracking-tight leading-none">
+            <span className="text-white">Bid</span>
+            <span className="text-[#D4AF37]">Forge</span>
+          </span>
+          <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em] leading-none opacity-50">Enterprise</span>
+        </div>
       </div>
 
       <div className="flex-1 max-w-md px-8 relative">
         <div className="relative group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-[#D4AF37] transition-colors" />
           <Input 
-            placeholder="Search RFPs..." 
+            placeholder="Search proposals..." 
             className="w-full bg-[#1A1A1A]/50 border-white/10 pl-9 focus-visible:ring-[#D4AF37]/50 rounded-full text-sm"
           />
         </div>

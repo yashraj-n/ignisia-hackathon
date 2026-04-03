@@ -30,7 +30,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'RFPilot - Command Center',
+        title: 'BidForge - Command Center',
       },
     ],
     links: [

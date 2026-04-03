@@ -29,9 +29,9 @@ function DashboardComponent() {
     <div className="p-8 pb-32 min-h-full">
       <div className="max-w-7xl mx-auto space-y-12">
         <header className="space-y-1">
-          <h1 className="text-4xl font-bold tracking-tight text-white mb-2">RFP Command Center</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-white mb-2">BidForge Command Center</h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            Streamline your procurement process with AI-powered analysis and response management.
+            Precision proposal forging powered by AI. Manage your sales pipeline with authority.
           </p>
         </header>
 
@@ -46,7 +46,7 @@ function DashboardComponent() {
              <div className="w-12 h-12 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center mb-4 group-hover:border-[#D4AF37]/50 group-hover:bg-[#D4AF37]/10 transition-all duration-300">
                 <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" />
              </div>
-             <span className="font-bold text-xs uppercase tracking-widest transition-colors duration-300">New RFP</span>
+             <span className="font-bold text-xs uppercase tracking-widest transition-colors duration-300">New Bid</span>
           </motion.button>
 
           {isLoading ? (
@@ -58,7 +58,7 @@ function DashboardComponent() {
           ) : stats ? (
             <>
               <StatCard
-                title="Total RFPs"
+                title="Total Proposals"
                 value={stats.total}
                 change={stats.totalChange}
                 icon={FileStack}
