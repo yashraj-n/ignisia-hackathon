@@ -1,0 +1,25 @@
+info:
+  name: upload rag
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: http://localhost:9000/api/rfp/upload
+  body:
+    type: json
+    data: |
+      {
+        "company_id": "69cf838e755b6a5473c94f0d",
+        "status": "approved",
+        "information": "FINAL PROPOSAL SUMMARY (AUTO-GENERATED)\n\nClient: University of Science & Arts of Oklahoma (USAO)\nProposal Type: Managed IT Services & Infrastructure Support\nStatus: READY FOR SUBMISSION\n\n\n--------------------------------------------------\nSELECTED SOLUTION OVERVIEW\n--------------------------------------------------\n- Fully managed IT support model (CIO + Helpdesk + Infrastructure)\n- Hybrid on-premise + cloud-enabled architecture\n- SLA-backed support with 24/7 monitoring\n- Scalable workstation and server management\n- Enterprise-grade backup & disaster recovery\n\n\n--------------------------------------------------\nFINALIZED PRODUCTS & SERVICES\n--------------------------------------------------\n\n1. CIO & Strategic IT Services\n- IT Governance & Strategy Consulting\n- Budget Planning & Roadmapping\n- Vendor Coordination\n\nQuantity: 1 Virtual CIO\nPricing:\n  Monthly Recurring: ₹2,50,000\n\n\n2. Help Desk & Escalation Support (L2/L3)\n- 3 Dedicated IT Technicians\n- Ticketing System + Phone + Support Portal\n- Business Hours Support (7:30 AM – 5:00 PM CT)\n- 24/7 Emergency Support\n\nSLA:\n- Initial Response Time: < 30 minutes (Critical)\n- Resolution Time: < 4 hours (High Priority)\n\nPricing:\n  Monthly Recurring: ₹4,20,000\n\n\n3. Workstation & Endpoint Management\n- Management of 861 Workstations\n- OS Patching, Monitoring Agent Deployment\n- Software Distribution & Updates\n\nPricing:\n  Monthly Recurring: ₹3,10,000\n  One-Time Setup: ₹1,75,000\n\n\n4. Server Infrastructure Management\n- Dell PowerEdge Servers (Virtualized - Hyper-V)\n- Server Monitoring, Maintenance & Patching\n- NAS Backup System Management\n\nQuantity: 12 Servers (Estimated)\n\nPricing:\n  Monthly Recurring: ₹2,80,000\n  One-Time Setup: ₹2,25,000\n\n\n5. Network Infrastructure Monitoring\n- 24x7x365 Monitoring (LAN/WAN/WLAN)\n- Firewall (SonicWall), Ubiquiti AP Management\n- SNMP Monitoring, Logging, Alerts\n\nPricing:\n  Monthly Recurring: ₹3,40,000\n  One-Time Setup: ₹1,90,000\n\n\n6. Backup & Disaster Recovery\n- On-Prem + Offsite Replication Setup\n- Hourly Local Backups + Nightly Offsite Sync\n- Recovery Testing & Optimization\n\nPricing:\n  Monthly Recurring: ₹2,10,000\n  One-Time Setup: ₹2,60,000\n\n\n7. Vendor & Application Support\n- Microsoft 365, Adobe Suite, SQL Server\n- Coordination with ISPs & Third-Party Vendors\n\nPricing:\n  Monthly Recurring: ₹1,75,000\n\n\n--------------------------------------------------\nTOTAL PRICING SUMMARY\n--------------------------------------------------\n\nOne-Time (Non-Recurring Charges):\n₹10,50,000\n\nMonthly Recurring Charges (MRC):\n₹19,85,000\n\nEstimated Annual Cost:\n₹2,48,70,000\n\n\n--------------------------------------------------\nASSUMPTIONS\n--------------------------------------------------\n- Server count and storage are estimated based on typical university scale\n- Licensing costs for third-party software are excluded\n- Pricing assumes a 12-month engagement\n\n\n--------------------------------------------------\nRECOMMENDATION\n--------------------------------------------------\nThe proposed solution fully satisfies USAO’s requirements for:\n- IT Operations\n- Infrastructure Management\n- Helpdesk Support\n- Backup & Disaster Recovery\n\nThis solution ensures scalability, reliability, and cost-efficiency while aligning with enterprise IT best practices.\n\n\n--------------------------------------------------\nSTATUS: APPROVED FOR FINAL SUBMISSION\n--------------------------------------------------"
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55SWQiOiI2OWNmODM4ZTc1NWI2YTU0NzNjOTRmMGQiLCJlbWFpbCI6ImFzaGlzaDk5MjAwNUBnbWFpbC5jb20iLCJpYXQiOjE3NzUyMzQ4MDgsImV4cCI6MTc3NTgzOTYwOH0.bfphmciqZGmcEzQ0L4n-WGBkA5_TKPNypHZplbyTCRs
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

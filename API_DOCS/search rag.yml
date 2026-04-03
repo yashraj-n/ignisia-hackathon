@@ -1,0 +1,24 @@
+info:
+  name: search rag
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: http://localhost:9000/api/searchrfp
+  body:
+    type: json
+    data: |-
+      {
+        "company_id": "69cf838e755b6a5473c94f0d",
+        "query": "what was my past product price?"
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55SWQiOiI2OWNmODM4ZTc1NWI2YTU0NzNjOTRmMGQiLCJlbWFpbCI6ImFzaGlzaDk5MjAwNUBnbWFpbC5jb20iLCJpYXQiOjE3NzUyMzQ4MDgsImV4cCI6MTc3NTgzOTYwOH0.bfphmciqZGmcEzQ0L4n-WGBkA5_TKPNypHZplbyTCRs
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
