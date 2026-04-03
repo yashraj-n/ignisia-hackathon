@@ -88,3 +88,32 @@ export function signJwt(payload: Omit<JwtPayload, "iat" | "exp">, opts?: { ttlSe
   return `${signingInput}.${encSig}`;
 }
 
+export function verifyJwt(token: string): JwtPayload {
+  const secret = process.env.AUTH_TOKEN_SECRET;
+  if (!secret) throw new Error("AUTH_TOKEN_SECRET is missing");
+
+  const parts = token.split(".");
+  if (parts.length !== 3) throw new Error("INVALID_TOKEN");
+
+  const [encHeader, encPayload, encSig] = parts;
+  const signingInput = `${encHeader}.${encPayload}`;
+
+  const expectedSig = crypto
+    .createHmac("sha256", secret)
+    .update(signingInput)
+    .digest();
+
+  const actualSig = base64UrlDecode(encSig!);
+  if (expectedSig.length !== actualSig.length || !crypto.timingSafeEqual(expectedSig, actualSig)) {
+    throw new Error("INVALID_TOKEN");
+  }
+
+  const payload = JSON.parse(Buffer.from(base64UrlDecode(encPayload!)).toString()) as JwtPayload;
+
+  if (payload.exp < Math.floor(Date.now() / 1000)) {
+    throw new Error("TOKEN_EXPIRED");
+  }
+
+  return payload;
+}
+
