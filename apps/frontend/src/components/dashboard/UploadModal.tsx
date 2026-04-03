@@ -1,20 +1,30 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
-import { FileUp, X, FileText, CheckCircle2, Loader2, Image, FileType2 } from 'lucide-react';
+import { FileUp, X, FileText, CheckCircle2, Loader2, Image, FileType2, AlertCircle } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
+import { API_BASE_URL } from '../../lib/utils';
 
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+interface CompanyInfo {
+  id: string;
+  name: string;
+  login_email: string;
+}
+
 const steps = [
-  "Analyzing RFP...",
-  "Extracting scope...",
-  "Detecting infrastructure...",
-  "Generating insights...",
+  "Parsing RFP document...",
+  "Extracting principal requirements...",
+  "Searching for ambiguous requirements...",
+  "Identifying missing requirements...",
+  "Finalizing execution plan...",
+  "Generating summary...",
 ];
 
 type AcceptedFileType = 'pdf' | 'docx' | 'image';
@@ -51,8 +61,26 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(-1);
   const [isComplete, setIsComplete] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  // Get company info
+  const { data: companyData } = useQuery({
+    queryKey: ['company-me'],
+    queryFn: async () => {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/api/me`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to fetch company info');
+      const data = await res.json();
+      return data.company as CompanyInfo;
+    },
+    enabled: isOpen,
+  });
 
   // Generate image preview when an image file is selected
   useEffect(() => {
@@ -70,28 +98,95 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
     if (file && currentStep === -1) {
       setCurrentStep(0);
     }
-  }, [file]);
+  }, [file, currentStep]);
+
+  // Upload file and navigate
+  useEffect(() => {
+    if (isUploading || !file || !companyData) return;
+
+    const uploadFile = async () => {
+      try {
+        setIsUploading(true);
+        setUploadError(null);
+
+        // Read file content
+        const fileContent = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsText(file);
+        });
+
+        // Generate temporary RFP ID
+        const rfpId = `rfp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        // Upload to backend
+        const token = localStorage.getItem('token');
+        const uploadRes = await fetch(`${API_BASE_URL}/api/rfp/upload`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            company_id: companyData.id,
+            status: 'Processing',
+            information: fileContent,
+          }),
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error('Failed to upload RFP');
+        }
+
+        const uploadedRfp = await uploadRes.json();
+
+        setIsComplete(true);
+
+        // Navigate to processing page after 1 second
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['rfps'] });
+          queryClient.invalidateQueries({ queryKey: ['rfp-stats'] });
+          
+          navigate({
+            to: '/rfp-processing',
+            search: {
+              rfpId: uploadedRfp.rfp?.id || rfpId,
+              companyId: companyData.id,
+              companyName: companyData.name,
+            },
+          });
+
+          onClose();
+          setFile(null);
+          setFileType(null);
+          setCurrentStep(-1);
+          setIsComplete(false);
+          setIsUploading(false);
+        }, 1500);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to upload RFP';
+        setUploadError(message);
+        setIsUploading(false);
+      }
+    };
+
+    if (currentStep === steps.length) {
+      uploadFile();
+    }
+  }, [currentStep, file, companyData, isUploading, navigate, queryClient, onClose]);
 
   // Step progression
   useEffect(() => {
+    if (isUploading || !file) return;
+
     if (currentStep >= 0 && currentStep < steps.length) {
       const timer = setTimeout(() => {
         setCurrentStep(prev => prev + 1);
       }, 1500);
       return () => clearTimeout(timer);
-    } else if (currentStep === steps.length) {
-      setIsComplete(true);
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['rfps'] });
-        queryClient.invalidateQueries({ queryKey: ['rfp-stats'] });
-        onClose();
-        setFile(null);
-        setFileType(null);
-        setCurrentStep(-1);
-        setIsComplete(false);
-      }, 2000);
     }
-  }, [currentStep, onClose, queryClient]);
+  }, [currentStep, file, isUploading]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -112,12 +207,13 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
   });
 
   const handleClose = () => {
-    if (currentStep >= 0 && !isComplete) return;
+    if ((currentStep >= 0 && !isComplete) || isUploading) return;
     onClose();
     setFile(null);
     setFileType(null);
     setCurrentStep(-1);
     setIsComplete(false);
+    setUploadError(null);
   };
 
   return (
@@ -143,7 +239,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
               <h2 className="text-xl font-bold text-white tracking-tight">Upload RFP Document</h2>
               <button
                 onClick={handleClose}
-                disabled={currentStep >= 0 && !isComplete}
+                disabled={currentStep >= 0 && !isComplete || isUploading}
                 className="p-2 text-muted-foreground hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 disabled:opacity-50"
               >
                 <X className="w-5 h-5" />
@@ -151,6 +247,20 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
             </div>
 
             <div className="p-8">
+              {uploadError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3"
+                >
+                  <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-red-400">Upload Error</p>
+                    <p className="text-xs text-red-300/80 mt-1">{uploadError}</p>
+                  </div>
+                </motion.div>
+              )}
+
               {!file ? (
                 /* ── Drop Zone ── */
                 <div

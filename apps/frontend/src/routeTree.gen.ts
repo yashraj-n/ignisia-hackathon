@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as RfpProcessingRouteImport } from './routes/rfp-processing'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -26,6 +27,11 @@ const WorkspaceRoute = WorkspaceRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RfpProcessingRoute = RfpProcessingRouteImport.update({
+  id: '/rfp-processing',
+  path: '/rfp-processing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
   '/profile': typeof ProfileRoute
+  '/rfp-processing': typeof RfpProcessingRoute
   '/settings': typeof SettingsRoute
   '/workspace': typeof WorkspaceRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
   '/profile': typeof ProfileRoute
+  '/rfp-processing': typeof RfpProcessingRoute
   '/settings': typeof SettingsRoute
   '/workspace': typeof WorkspaceRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
   '/profile': typeof ProfileRoute
+  '/rfp-processing': typeof RfpProcessingRoute
   '/settings': typeof SettingsRoute
   '/workspace': typeof WorkspaceRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/inventory'
     | '/profile'
+    | '/rfp-processing'
     | '/settings'
     | '/workspace'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/inventory'
     | '/profile'
+    | '/rfp-processing'
     | '/settings'
     | '/workspace'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/inventory'
     | '/profile'
+    | '/rfp-processing'
     | '/settings'
     | '/workspace'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   InventoryRoute: typeof InventoryRoute
   ProfileRoute: typeof ProfileRoute
+  RfpProcessingRoute: typeof RfpProcessingRoute
   SettingsRoute: typeof SettingsRoute
   WorkspaceRoute: typeof WorkspaceRoute
 }
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rfp-processing': {
+      id: '/rfp-processing'
+      path: '/rfp-processing'
+      fullPath: '/rfp-processing'
+      preLoaderRoute: typeof RfpProcessingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   InventoryRoute: InventoryRoute,
   ProfileRoute: ProfileRoute,
+  RfpProcessingRoute: RfpProcessingRoute,
   SettingsRoute: SettingsRoute,
   WorkspaceRoute: WorkspaceRoute,
 }
