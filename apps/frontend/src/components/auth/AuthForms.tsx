@@ -52,7 +52,7 @@ export function SignInForm({
       if (res.ok) {
         const data = await res.json();
         localStorage.setItem("token", data.token);
-        router.navigate({ to: "/profile" });
+        router.navigate({ to: "/dashboard" });
       } else {
         const err = await res.json();
         setErrorConfig({ isOpen: true, message: err.message || "Invalid credentials. Please check your email and password." });
