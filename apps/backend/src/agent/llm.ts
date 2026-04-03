@@ -1,9 +1,6 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { ChatOpenRouter } from "@langchain/openrouter";
 
-export const flashLlm = new ChatOpenAI({
-  apiKey: process.env.HUGGINGFACE_API_KEY,
-  model: "google/gemma-4-31B-it:novita",
-  configuration: {
-    baseURL: "https://router.huggingface.co/v1",
-  },
+export const flashLlm = new ChatOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
+  model: "google/gemini-2.5-flash-lite",
 });
