@@ -1,4 +1,5 @@
 import "dotenv/config";
+import "./listen";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import sensible from "@fastify/sensible";
