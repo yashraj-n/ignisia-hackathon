@@ -7,7 +7,7 @@ export default function Topnav() {
     <header className="h-16 border-b border-white/10 glass-panel flex items-center justify-between px-6 shrink-0 z-10 sticky top-0">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 flex items-center justify-center">
-          <img src="/logo-bidforge.png" alt="BidForge Logo" className="w-full h-full object-contain" />
+          <img src="/bidforge-icon.png" alt="BidForge Logo" className="w-full h-full object-contain" />
         </div>
         <div className="flex flex-col -gap-1">
           <span className="font-bold text-lg tracking-tight leading-none">
