@@ -12,6 +12,7 @@ import RecentRFPs from '../components/dashboard/RecentRFPs'
 import UploadModal from '../components/dashboard/UploadModal'
 import RFPDetailsPanel from '../components/dashboard/RFPDetailsPanel'
 import AppLayout from '../layout/AppLayout'
+import { BGPattern } from '../components/ui/bg-pattern'
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardComponent,
@@ -28,8 +29,11 @@ function DashboardComponent() {
 
   return (
     <AppLayout>
-      <div className="p-8 pb-32 min-h-full">
-        <div className="max-w-7xl mx-auto space-y-12">
+      <div className="p-8 pb-32 min-h-full relative">
+        {/* Grid background pattern */}
+        <BGPattern variant="grid" mask="fade-edges" size={32} fill="rgba(234, 179, 8, 0.04)" />
+        
+        <div className="max-w-7xl mx-auto space-y-12 relative z-10">
           <header className="space-y-1">
             <h1 className="text-4xl font-bold tracking-tight text-white mb-2">BidForge Command Center</h1>
             <p className="text-muted-foreground text-lg max-w-2xl">
@@ -40,14 +44,14 @@ function DashboardComponent() {
           {/* Stats Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <motion.button
-               whileHover={{ scale: 1.1, boxShadow: "0 0 30px rgba(212, 175, 55, 0.4)" }}
+               whileHover={{ scale: 1.1, boxShadow: "0 0 30px rgba(234, 179, 8, 0.3)" }}
                whileTap={{ scale: 0.95 }}
                transition={{ duration: 0.2 }}
                onClick={() => setIsUploadModalOpen(true)}
-               className="glass-panel flex flex-col items-center justify-center rounded-xl p-6 text-muted-foreground hover:text-[#D4AF37] hover:border-[#D4AF37]/50 hover:bg-[#D4AF37]/5 transition-all duration-300 group cursor-pointer h-full border-dashed border-white/20 relative overflow-hidden"
+               className="glass-panel flex flex-col items-center justify-center rounded-xl p-6 text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 group cursor-pointer h-full border-dashed border-white/20 relative overflow-hidden"
             >
-               <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-               <div className="w-12 h-12 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center mb-4 group-hover:border-[#D4AF37]/50 group-hover:bg-[#D4AF37]/20 group-hover:shadow-[0_0_15px_rgba(212,175,55,0.5)] transition-all duration-300 relative z-10">
+               <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+               <div className="w-12 h-12 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center mb-4 group-hover:border-primary/50 group-hover:bg-primary/20 group-hover:shadow-[0_0_15px_rgba(234,179,8,0.4)] transition-all duration-300 relative z-10">
                   <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" />
                </div>
                <span className="font-bold text-xs uppercase tracking-widest transition-colors duration-300 relative z-10">New Bid</span>

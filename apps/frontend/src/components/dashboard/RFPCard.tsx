@@ -11,7 +11,7 @@ interface RFPCardProps {
 const statusConfig = {
   Processing: { color: "text-[#3B82F6]", bg: "bg-[#3B82F6]/10", border: "border-[#3B82F6]/20" },
   Accepted: { color: "text-[#22C55E]", bg: "bg-[#22C55E]/10", border: "border-[#22C55E]/20" },
-  Rejected: { color: "text-[#EF4444]", bg: "bg-[#EF4444]/10", border: "border-[#EF4444]/20" },
+  Rejected: { color: "text-destructive", bg: "bg-destructive/10", border: "border-destructive/20" },
   Pending: { color: "text-[#FACC15]", bg: "bg-[#FACC15]/10", border: "border-[#FACC15]/20" },
 };
 
@@ -24,8 +24,7 @@ export default function RFPCard({ rfp, onClick }: RFPCardProps) {
       whileHover={{ 
         y: -5,
         scale: 1.01,
-        borderColor: "rgba(212, 175, 55, 0.3)",
-        boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.1)"
+        boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(234, 179, 8, 0.08)"
       }}
       whileTap={{ scale: 0.98 }}
       transition={{ 
@@ -33,17 +32,17 @@ export default function RFPCard({ rfp, onClick }: RFPCardProps) {
         ease: [0.23, 1, 0.32, 1]
       }}
       onClick={() => onClick(rfp)}
-      className="glass-panel rounded-xl p-5 cursor-pointer hover-glow group relative border border-white/5 transition-colors overflow-hidden"
+      className="glass-panel rounded-xl p-5 cursor-pointer group relative border border-white/5 transition-colors overflow-visible hover:border-primary/30"
     >
       {/* Glossy overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-      <div className="absolute inset-x-0 h-[1px] top-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl overflow-hidden" />
+      <div className="absolute inset-x-0 h-[1px] top-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl" />
 
       {hasMissingFields && (
         <motion.div 
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="absolute -top-2 -right-2 bg-[#EF4444] text-white p-1 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)] z-10"
+          className="absolute -top-1.5 -right-1.5 bg-destructive text-white p-1 rounded-full shadow-[0_0_10px_rgba(200,75,107,0.5)] z-20"
         >
           <AlertCircle className="w-4 h-4" />
         </motion.div>
@@ -51,7 +50,7 @@ export default function RFPCard({ rfp, onClick }: RFPCardProps) {
       
       <div className="flex justify-between items-start mb-4 relative z-10">
         <div className="flex-1 min-w-0 mr-2">
-          <h3 className="text-white font-semibold text-lg leading-tight mb-1 group-hover:text-[#D4AF37] transition-colors line-clamp-1">{rfp.title}</h3>
+          <h3 className="text-white font-semibold text-lg leading-tight mb-1 group-hover:text-primary transition-colors line-clamp-1">{rfp.title}</h3>
           <p className="text-muted-foreground text-sm truncate">{rfp.companyName}</p>
         </div>
         <motion.span 

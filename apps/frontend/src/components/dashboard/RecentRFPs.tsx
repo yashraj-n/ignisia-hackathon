@@ -14,7 +14,7 @@ interface RecentRFPsProps {
 const statusConfig = {
   Processing: "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20",
   Accepted: "bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20",
-  Rejected: "bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/20",
+  Rejected: "bg-destructive/10 text-destructive border-destructive/20",
   Pending: "bg-[#FACC15]/10 text-[#FACC15] border-[#FACC15]/20",
 };
 
@@ -25,12 +25,12 @@ export default function RecentRFPs({ rfps, onSelectRFP }: RecentRFPsProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-white tracking-tight">Recent RFPs</h2>
-        <div className="flex items-center bg-[#121212] border border-white/10 rounded-lg p-1">
+        <div className="flex items-center bg-[#111111] border border-white/[0.08] rounded-lg p-1">
           <button
             onClick={() => setViewMode('grid')}
             className={clsx(
               "p-1.5 rounded-md transition-colors",
-              viewMode === 'grid' ? "bg-[#1A1A1A] text-[#D4AF37] shadow-sm" : "text-muted-foreground hover:text-white"
+              viewMode === 'grid' ? "bg-[#1A1A1A] text-primary shadow-sm" : "text-muted-foreground hover:text-white"
             )}
           >
             <LayoutGrid className="w-4 h-4" />
@@ -39,7 +39,7 @@ export default function RecentRFPs({ rfps, onSelectRFP }: RecentRFPsProps) {
             onClick={() => setViewMode('table')}
             className={clsx(
               "p-1.5 rounded-md transition-colors",
-              viewMode === 'table' ? "bg-[#1A1A1A] text-[#D4AF37] shadow-sm" : "text-muted-foreground hover:text-white"
+              viewMode === 'table' ? "bg-[#1A1A1A] text-primary shadow-sm" : "text-muted-foreground hover:text-white"
             )}
           >
             <List className="w-4 h-4" />
@@ -72,7 +72,7 @@ export default function RecentRFPs({ rfps, onSelectRFP }: RecentRFPsProps) {
                   onClick={() => onSelectRFP(rfp)}
                 >
                   <TableCell className="font-medium text-white relative">
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-[#D4AF37] group-hover:h-3/5 transition-all duration-300 rounded-r-full" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-primary group-hover:h-3/5 transition-all duration-300 rounded-r-full" />
                     <span className="pl-4 block">{rfp.title}</span>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{rfp.companyName}</TableCell>
