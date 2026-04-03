@@ -55,6 +55,14 @@ model RFP{
   company_id String @db.ObjectId
   status String
   information String
+
+  source_email       String?
+  parsed_output      Json?
+  explore_output     String?
+  summarise_output   Json?
+  final_document_url String?
+  rejection_reason   String?
+  rejected_at_step   String?
   
   embedding Float[]
 

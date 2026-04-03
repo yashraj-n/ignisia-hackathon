@@ -25,8 +25,8 @@ export type SummariserResponse = { items: SummariserItem[] };
 
 interface SummariserInput {
     parsed: RFPParserResponse;
-    inventoryResult: any;
-    competitorResult: any;
+    inventoryText: string;
+    competitorText: string;
     companyId: string;
 }
 
@@ -149,7 +149,7 @@ function createSemanticSearchTool(companyId: string) {
     );
 }
 
-function extractTextFromResult(result: any): string {
+export function extractTextFromResult(result: any): string {
     if (typeof result === "string") return result;
 
     const lastMessage = result?.messages?.at(-1);
@@ -180,9 +180,8 @@ export async function generateSummary(input: SummariserInput) {
         responseFormat: summariserResponseFormat,
     });
 
-    // Extract text content from agent results
-    const inventoryText = extractTextFromResult(input.inventoryResult);
-    const competitorText = extractTextFromResult(input.competitorResult);
+    const inventoryText = input.inventoryText;
+    const competitorText = input.competitorText;
 
     const userMessage = `
 =======================================================

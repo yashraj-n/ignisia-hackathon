@@ -14,6 +14,12 @@ import { listInventoryRoute } from "./routes/company/list-inventory";
 import { listCompetitorsRoute } from "./routes/company/list-competitors";
 import { uploadRfpRoute } from "./routes/rfp/upload-rfp";
 import { searchRfpRoute } from "./routes/rfp/search-rfp";
+import { getRfpRoute } from "./routes/rfp/get-rfp";
+import { listRfpsRoute } from "./routes/rfp/list-rfps";
+import { rejectRfpRoute } from "./routes/rfp/reject-rfp";
+import { exploreRfpRoute } from "./routes/rfp/explore-rfp";
+import { summariseRfpRoute } from "./routes/rfp/summarise-rfp";
+import { generateDocumentRfpRoute } from "./routes/rfp/generate-document-rfp";
 
 const fastify = Fastify({
   loggerInstance: logger,
@@ -31,6 +37,12 @@ fastify.register(listInventoryRoute);
 fastify.register(listCompetitorsRoute);
 fastify.register(uploadRfpRoute);
 fastify.register(searchRfpRoute);
+fastify.register(getRfpRoute);
+fastify.register(listRfpsRoute);
+fastify.register(rejectRfpRoute);
+fastify.register(exploreRfpRoute);
+fastify.register(summariseRfpRoute);
+fastify.register(generateDocumentRfpRoute);
 
 const start = async () => {
   try {
