@@ -2,19 +2,19 @@ import React, { useState, useEffect, useRef } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { FileStack, CheckCircle, XCircle, Clock, Plus, Package, FileText, Edit, Loader2 } from 'lucide-react'
-import { cn } from '../lib/utils'
+import { FileStack, CheckCircle, XCircle, Clock, Plus, Package, FileText, Edit } from 'lucide-react'
 
 import { rfpQueries } from '../store/queries'
 import type { RFP } from '../lib/types'
 
 import UploadModal from '../components/dashboard/UploadModal'
 import RFPDetailsPanel from '../components/dashboard/RFPDetailsPanel'
+import RecentRFPs from '../components/dashboard/RecentRFPs'
 import AppLayout from '../layout/AppLayout'
 import { BGPattern } from '../components/ui/bg-pattern'
 
-const BarChart = () => {
-    const data = [
+const BarChart = ({ weekly }: { weekly?: Array<{ day: string; count: number }> }) => {
+    const defaultData = [
         { label: 'Mon', value: 65 },
         { label: 'Tue', value: 45 },
         { label: 'Wed', value: 85 },
@@ -23,6 +23,8 @@ const BarChart = () => {
         { label: 'Sat', value: 55 },
         { label: 'Sun', value: 75 },
     ];
+
+    const data = weekly && weekly.length > 0 ? weekly.map((d) => ({ label: d.day, value: d.count })) : defaultData;
 
     return (
         <div className="flex items-end justify-between h-full w-full gap-2 px-2 pb-2">
@@ -85,7 +87,7 @@ const BentoItem = ({ className, children }: { className?: string, children: Reac
     );
 };
 
-export const CyberneticBentoGrid = ({ stats, rfps, isLoading, onNewBid, onSelectRFP, onEditInventory }: any) => {
+export const CyberneticBentoGrid = ({ stats, weekly, rfps, isLoading, onNewBid, onSelectRFP, onEditInventory, onAnalytics }: any) => {
     return (
         <div className="w-full z-10 max-w-7xl mx-auto mt-4">
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-8">Welcome, <span className="text-[#D4AF37]">Acme Corp</span></h1>
@@ -93,13 +95,21 @@ export const CyberneticBentoGrid = ({ stats, rfps, isLoading, onNewBid, onSelect
                 
                 {/* Performance Metrics Block - large */}
                 <BentoItem className="col-span-1 md:col-span-2 row-span-2">
-                    <div className="flex items-center gap-3 mb-4">
-                        <Package className="w-8 h-8 text-[#D4AF37]" />
-                        <h2 className="text-2xl font-bold text-white">Performance Metrics</h2>
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                            <Package className="w-8 h-8 text-[#D4AF37]" />
+                            <h2 className="text-2xl font-bold text-white">Performance Metrics</h2>
+                        </div>
+                        <button
+                            onClick={onAnalytics}
+                            className="rounded-lg bg-[#D4AF37] hover:bg-[#e2b60f] text-black font-semibold py-2 px-3 transition-all text-xs"
+                        >
+                            Detailed Analytics
+                        </button>
                     </div>
                     <p className="text-gray-400 mb-6 text-sm">Weekly proposal generation and success rates.</p>
                     <div className="flex-1 min-h-0">
-                        <BarChart />
+                        <BarChart weekly={weekly} />
                     </div>
                 </BentoItem>
 
@@ -140,44 +150,9 @@ export const CyberneticBentoGrid = ({ stats, rfps, isLoading, onNewBid, onSelect
                     <p className="text-sm text-gray-500 mt-2">Awaiting decision</p>
                 </BentoItem>
 
-                {/* Ingestion Pipeline Block - left half */}
-                <BentoItem className="col-span-1 md:col-span-2 row-span-2 overflow-y-auto">
-                    <div className="flex items-center gap-3 mb-6">
-                        <Loader2 className={cn("w-8 h-8", rfps?.some((r: RFP) => r.status === 'Processing') ? "text-[#D4AF37] animate-spin" : "text-gray-500")} />
-                        <h2 className="text-2xl font-bold text-white">Ingestion Pipeline</h2>
-                    </div>
-                    <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-xl bg-black/20 p-6 text-center">
-                        {rfps?.some((r: RFP) => r.status === 'Processing') ? (
-                            <div className="space-y-4 w-full">
-                                {rfps.filter((r: RFP) => r.status === 'Processing').map((rfp: RFP) => (
-                                    <div key={rfp.id} className="flex flex-col gap-2 p-4 bg-black/40 border border-[#D4AF37]/30 rounded-lg text-left">
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-semibold text-white truncate">{rfp.title}</span>
-                                            <span className="text-[10px] bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase tracking-widest">Processing</span>
-                                        </div>
-                                        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                                            <motion.div 
-                                                initial={{ width: "0%" }}
-                                                animate={{ width: "100%" }}
-                                                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                                                className="bg-[#D4AF37] h-full"
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <CheckCircle className="w-12 h-12 text-green-500/50 mx-auto mb-2" />
-                                <p className="text-xl font-medium text-gray-400">Ingestion pipeline currently free</p>
-                                <p className="text-sm text-gray-600">Ready for next data injection</p>
-                            </div>
-                        )}
-                    </div>
-                </BentoItem>
 
-                {/* RFPs Block - right half */}
-                <BentoItem className="col-span-1 md:col-span-2 row-span-2 overflow-y-auto">
+                {/* RFPs Block - full width */}
+                <BentoItem className="col-span-1 md:col-span-4 row-span-2 overflow-y-auto">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <FileText className="w-8 h-8 text-[#C0C0C0]" />
@@ -201,31 +176,15 @@ export const CyberneticBentoGrid = ({ stats, rfps, isLoading, onNewBid, onSelect
                         </div>
                     </div>
                     <div className="flex-1 overflow-hidden">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
-                           {isLoading ? (
-                                [...Array(2)].map((_, i) => (
-                                    <div key={i} className="bg-black/30 border border-white/5 rounded-xl h-[160px] animate-pulse" />
-                                ))
-                           ) : rfps?.slice(0, 2).map((rfp: RFP) => (
-                               <div 
-                                    key={rfp.id} 
-                                    onClick={() => onSelectRFP(rfp)}
-                                    className="bg-black/40 border border-white/5 hover:border-[#D4AF37]/50 cursor-pointer rounded-xl p-5 flex flex-col justify-between transition-colors"
-                               >
-                                   <div>
-                                     <div className="font-semibold text-white truncate text-lg mb-1">{rfp.title}</div>
-                                     <div className="text-sm text-gray-400 line-clamp-2">{rfp.companyName}</div>
-                                   </div>
-                                   <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-                                     <span className="text-xs uppercase tracking-wider text-gray-500 font-medium">{rfp.status}</span>
-                                     <span className="text-xs text-gray-600">{rfp.arrivalDate}</span>
-                                   </div>
-                                </div>
-                           ))}
-                           {(!isLoading && (!rfps || rfps.length === 0)) && (
-                                <div className="text-gray-500 col-span-2 h-full flex items-center justify-center border border-dashed border-white/10 rounded-xl py-12">No RFPs found</div>
-                           )}
-                        </div>
+                        {isLoading ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                {[...Array(4)].map((_, i) => (
+                                    <div key={i} className="bg-black/30 border border-white/5 rounded-xl h-40 animate-pulse" />
+                                ))}
+                            </div>
+                        ) : (
+                            <RecentRFPs rfps={rfps ?? []} onSelectRFP={onSelectRFP} />
+                        )}
                     </div>
                 </BentoItem>
             </div>
@@ -242,10 +201,11 @@ function DashboardComponent() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [selectedRFP, setSelectedRFP] = useState<RFP | null>(null)
 
-  const { data: stats, isLoading: isStatsLoading } = useQuery(rfpQueries.stats())
+  const { data: analytics, isLoading: isStatsLoading } = useQuery(rfpQueries.stats())
   const { data: rfps = [], isLoading: isRFPsLoading } = useQuery(rfpQueries.list())
 
   const isLoading = isStatsLoading || isRFPsLoading;
+  const stats = analytics?.stats;
 
   return (
     <AppLayout>
@@ -256,11 +216,13 @@ function DashboardComponent() {
         <div className="max-w-7xl mx-auto relative z-10 space-y-2">
           <CyberneticBentoGrid 
             stats={stats} 
+            weekly={analytics?.weekly}
             rfps={rfps} 
             isLoading={isLoading} 
             onNewBid={() => setIsUploadModalOpen(true)}
             onEditInventory={() => navigate({ to: '/inventory' })}
             onSelectRFP={setSelectedRFP}
+            onAnalytics={() => navigate({ to: '/analytics' })}
           />
 
         </div>

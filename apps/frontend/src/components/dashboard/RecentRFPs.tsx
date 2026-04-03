@@ -49,9 +49,21 @@ export default function RecentRFPs({ rfps, onSelectRFP }: RecentRFPsProps) {
 
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {rfps.map((rfp) => (
-            <RFPCard key={rfp.id} rfp={rfp} onClick={onSelectRFP} />
-          ))}
+          {rfps.length > 0 ? (
+            rfps.slice(0, 4).map((rfp) => (
+              <RFPCard key={rfp.id} rfp={rfp} onClick={onSelectRFP} />
+            ))
+          ) : (
+            Array.from({ length: 4 }).map((_, idx) => (
+              <div
+                key={`placeholder-${idx}`}
+                className="glass-panel rounded-xl p-5 border border-dashed border-white/10 text-muted-foreground flex flex-col justify-center items-center min-h-[180px]"
+              >
+                <p className="text-sm font-semibold">No recent RFP available</p>
+                <p className="text-xs text-gray-400 mt-2">Upload or ingest an RFP to start tracking</p>
+              </div>
+            ))
+          )}
         </div>
       ) : (
         <div className="glass-panel rounded-xl overflow-hidden">

@@ -24,6 +24,19 @@ export interface RFPStats {
   pendingChange: number;
 }
 
+export interface RFPAnalytics {
+  stats: RFPStats & {
+    processing: number;
+  };
+  weekly: Array<{ day: string; count: number }>;
+  statusDistribution: {
+    accepted: number;
+    rejected: number;
+    pending: number;
+    processing: number;
+  };
+}
+
 export interface InventoryItem {
   id: string;
   companyId: string;

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import AppLayout from '../layout/AppLayout'
-import { User, Bell, Camera, Zap, LogOut } from 'lucide-react'
+import { User, Camera, Zap, LogOut } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Avatar, AvatarFallback } from '../components/ui/avatar'
 import { useEffect, useState } from 'react'
@@ -68,7 +68,6 @@ function ProfileComponent() {
           {/* Header */}
           <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="flex items-center gap-6">
-              <div className="relative group">
                 <Avatar className="h-24 w-24 border-2 border-primary/30 shadow-[0_0_20px_rgba(234,179,8,0.12)] bg-[#1A1A1A]">
                   <AvatarFallback className="bg-transparent text-primary text-3xl font-bold">
                     {profile?.name ? profile.name.slice(0, 2).toUpperCase() : '..'}
@@ -87,7 +86,6 @@ function ProfileComponent() {
                   {profile?.login_email || ''}
                 </p>
               </div>
-            </div>
             <div className="flex gap-3">
               <button 
                 onClick={() => setIsEditing(!isEditing)}
@@ -100,6 +98,24 @@ function ProfileComponent() {
               </button>
             </div>
           </header>
+
+          <motion.section variants={itemVariants} className="glass-panel p-5 rounded-2xl border border-white/10 bg-[#0B0B0B]/70">
+            <h2 className="text-lg font-bold text-white mb-3">Ingestion Pipeline Phases</h2>
+            <p className="text-sm text-gray-400 mb-4">Current RFP processing sequence. Parser text is formatted for readability and professional document export.</p>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              {[
+                { label: 'Parser', description: 'Extracts structured requirements from raw RFP text, removes markdown, normalizes fields.' },
+                { label: 'Analyzer', description: 'Evaluates requirements against inventory and competitive benchmarks.' },
+                { label: 'Generator', description: 'Compiles proposal content into professional format and summary text.' },
+                { label: 'Reviewer', description: 'Checks for missing fields and policy compliance before final delivery.' },
+              ].map((phase) => (
+                <div key={phase.label} className="bg-[#111111]/80 border border-white/10 rounded-xl p-3">
+                  <p className="text-xs uppercase tracking-widest mb-1 text-primary font-bold">{phase.label}</p>
+                  <p className="text-sm text-white leading-snug">{phase.description}</p>
+                </div>
+              ))}
+            </div>
+          </motion.section>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Info */}
@@ -173,30 +189,7 @@ function ProfileComponent() {
                 </div>
               </motion.section>
 
-              {/* Notification Preferences */}
-              <motion.section variants={itemVariants} className="glass-panel p-6 rounded-2xl border border-white/10">
-                <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-primary" /> Notification Preferences
-                </h2>
-                <div className="space-y-4">
-                  {[
-                    { label: "New Proposal Requests", sub: "Get notified when a new RFP is uploaded by the team.", active: true },
-                    { label: "Competitor Updates", sub: "Notifications when new competitors are added to the system.", active: true },
-                    { label: "Inventory Changes", sub: "Get alerted on inventory modifications and updates.", active: false },
-                    { label: "Weekly Strategy Reports", sub: "Summary of proposal performance and win-rate analytics.", active: false }
-                  ].map((notif, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 bg-[#0A0A0A]/50 rounded-xl border border-white/5 group hover:border-primary/30 transition-colors">
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-white">{notif.label}</p>
-                        <p className="text-xs text-muted-foreground">{notif.sub}</p>
-                      </div>
-                      <div className={`w-10 h-5 rounded-full relative cursor-pointer overflow-hidden p-0.5 shadow-inner transition-colors duration-300 ${notif.active ? 'bg-primary/30' : 'bg-white/10'}`}>
-                        <div className={`w-4 h-4 rounded-full transition-transform duration-300 ${notif.active ? 'translate-x-5 bg-primary' : 'translate-x-0 bg-white/40'}`}></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.section>
+              
             </div>
 
             {/* Right Column: Session & Security */}

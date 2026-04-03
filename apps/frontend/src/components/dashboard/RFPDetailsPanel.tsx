@@ -4,6 +4,22 @@ import type { RFP } from '../../lib/types';
 import { Badge } from '../ui/badge';
 import { clsx } from "clsx";
 
+function formatRfpText(text: string) {
+  if (!text) return 'No scope provided.';
+  const cleaned = text
+    .replace(/\#\s?/g, '')
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '')
+    .replace(/\_\_/, '')
+    .replace(/\_/, '')
+    .replace(/\`/g, '')
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+    .replace(/\n\s*\-\s*/g, '\n• ')
+    .replace(/\n\s*\d+\.\s*/g, '\n• ')
+    .trim();
+  return cleaned;
+}
+
 interface RFPDetailsPanelProps {
   rfp: RFP | null;
   onClose: () => void;
@@ -58,9 +74,11 @@ export default function RFPDetailsPanel({ rfp, onClose }: RFPDetailsPanelProps) 
 
               <div>
                 <h3 className="text-xs uppercase font-bold text-muted-foreground mb-3 tracking-wider">Scope of Work</h3>
-                <p className="text-sm text-[#E5E5E5] leading-relaxed bg-[#1A1A1A]/50 p-4 rounded-xl border border-white/5">
-                  {rfp.scopeOfWork}
-                </p>
+                <div className="text-sm text-[#E5E5E5] leading-relaxed bg-[#1A1A1A]/50 p-4 rounded-xl border border-white/5 space-y-2">
+                  {formatRfpText(rfp.scopeOfWork).split('\n').map((line, idx) => (
+                    <p key={idx} className="m-0">{line}</p>
+                  ))}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-6">

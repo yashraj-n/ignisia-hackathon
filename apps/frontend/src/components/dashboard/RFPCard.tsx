@@ -16,8 +16,8 @@ const statusConfig = {
 };
 
 export default function RFPCard({ rfp, onClick }: RFPCardProps) {
-  const statusStyle = statusConfig[rfp.status];
-  const hasMissingFields = rfp.missingFields.length > 0;
+  const statusStyle = statusConfig[rfp.status] || statusConfig.Processing;
+  const hasMissingFields = rfp.missingFields && rfp.missingFields.length > 0;
 
   return (
     <motion.div

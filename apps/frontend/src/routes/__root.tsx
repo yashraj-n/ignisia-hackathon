@@ -69,6 +69,30 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       </Link>
     </div>
   ),
+  errorComponent: ({ error }) => (
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-background">
+      <div className="size-20 rounded-2xl bg-destructive/10 flex items-center justify-center mb-6">
+        <span className="text-4xl text-destructive">⚠️</span>
+      </div>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground mb-2">Something went wrong</h1>
+      <p className="text-muted-foreground mb-8 max-w-md">
+        An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.
+      </p>
+      <div className="text-sm text-muted-foreground mb-6">
+        <details>
+          <summary className="cursor-pointer">Error details</summary>
+          <pre className="mt-2 p-4 bg-muted rounded text-left overflow-auto max-w-2xl">
+            {error.message}
+          </pre>
+        </details>
+      </div>
+      <Link to="/dashboard">
+        <Button variant="default" size="lg" className="bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black">
+          Back to Dashboard
+        </Button>
+      </Link>
+    </div>
+  ),
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
