@@ -11,9 +11,12 @@ datasource db {
 model Company {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   name           String
-  login_email    String
+  login_email    String   @unique
   login_password String
   size           Int
+  is_verified    Boolean  @default(false)
+  verification_token String?
+  verification_token_expires_at DateTime?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

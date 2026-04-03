@@ -18,6 +18,7 @@ export default function Topnav() {
         </div>
       </div>
 
+
       <div className="flex-1 max-w-md px-8 relative">
         <div className="relative group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-[#D4AF37] transition-colors" />
@@ -25,6 +26,7 @@ export default function Topnav() {
             placeholder="Search proposals..." 
             className="w-full bg-[#1A1A1A]/50 border-white/10 pl-9 focus-visible:ring-[#D4AF37]/50 rounded-full text-sm"
           />
+
         </div>
       </div>
 
