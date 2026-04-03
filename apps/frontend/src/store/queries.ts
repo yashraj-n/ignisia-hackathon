@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
-import type { RFP, RFPAnalytics } from '../lib/types';
+import type { RFPItem, RFPAnalytics, RFPStats, InventoryItem, CompetitorItem } from '../lib/types';
 
 const API_BASE = 'http://localhost:9000';
 
@@ -9,6 +9,34 @@ function getAuthHeaders() {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
+}
+
+export function computeRFPStats(rfps: RFPItem[]): RFPStats {
+  const rejectedStatuses = ['parse_rejected', 'explore_rejected', 'summarise_rejected', 'failed'];
+  const pendingStatuses = ['parsed', 'exploring', 'explored', 'summarising', 'summarised', 'generating_document'];
+
+  return {
+    total: rfps.length,
+    totalChange: 0,
+    completed: rfps.filter((r) => r.status === 'completed').length,
+    completedChange: 0,
+    rejected: rfps.filter((r) => rejectedStatuses.includes(r.status)).length,
+    rejectedChange: 0,
+    pending: rfps.filter((r) => pendingStatuses.includes(r.status)).length,
+    pendingChange: 0,
+  };
+}
+
+async function fetchRFPList(): Promise<RFPItem[]> {
+  const res = await fetch(`${API_BASE}/api/rfp`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to fetch RFPs');
+  }
+  const data = await res.json();
+  return data.rfps ?? [];
 }
 
 export const rfpQueries = {
@@ -30,36 +58,25 @@ export const rfpQueries = {
   list: () =>
     queryOptions({
       queryKey: ['rfps'],
-      queryFn: async (): Promise<RFP[]> => {
-        const response = await fetch(`${API_BASE}/api/rfp`, {
-          headers: getAuthHeaders(),
-        });
-        if (!response.ok) {
-          throw new Error('Could not load RFP list.');
-        }
-        const data = await response.json();
-        return (data.rfps ?? []) as RFP[];
-      },
+      queryFn: fetchRFPList,
     }),
   detail: (id: string) =>
     queryOptions({
       queryKey: ['rfps', id],
-      queryFn: async () => {
-        const response = await fetch(`${API_BASE}/api/rfp/${id}`, {
+      queryFn: async (): Promise<RFPItem> => {
+        const res = await fetch(`${API_BASE}/api/rfp/${id}`, {
           headers: getAuthHeaders(),
         });
-        if (!response.ok) {
-          throw new Error('Could not load RFP details.');
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || 'Failed to fetch RFP');
         }
-        const data = await response.json();
-        return data.rfp ?? null;
+        const data = await res.json();
+        return data.rfp;
       },
       enabled: !!id,
     }),
 };
-
-import type { InventoryItem, CompetitorItem } from '../lib/types';
-
 export const inventoryQueries = {
   list: () =>
     queryOptions({
@@ -84,6 +101,7 @@ export const inventoryQueries = {
       },
     }),
 };
+
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -147,4 +165,3 @@ export async function uploadCompetitor(payload: UploadPayload): Promise<Competit
   const data = await res.json();
   return data.competitor;
 }
-

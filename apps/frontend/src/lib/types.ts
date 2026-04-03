@@ -1,27 +1,59 @@
-export type RFPStatus = 'Processing' | 'Pending' | 'Accepted' | 'Rejected';
+export type RFPStatus =
+  | 'processing'
+  | 'parsed'
+  | 'exploring'
+  | 'explored'
+  | 'summarising'
+  | 'summarised'
+  | 'generating_document'
+  | 'completed'
+  | 'parse_rejected'
+  | 'explore_rejected'
+  | 'summarise_rejected'
+  | 'failed';
 
-export interface RFP {
-  id: string;
-  title: string;
-  companyName: string;
-  arrivalDate: string;
-  arrivalTime: string;
-  status: RFPStatus;
-  scopeOfWork: string;
-  infrastructureDetected: string[];
-  assetsDetected: string[];
+export interface RFPParsedOutput {
+  parsedContent: string;
   missingFields: string[];
+}
+
+export interface SummariserItem {
+  name: string;
+  current_price: string;
+  options: string[];
+  avg_competitor_price: string | null;
+  recommended_option_index: number;
+}
+
+export interface SummariserResponse {
+  items: SummariserItem[];
+}
+
+export interface RFPItem {
+  id: string;
+  company_id: string;
+  status: RFPStatus;
+  information: string;
+  source_email: string | null;
+  parsed_output: RFPParsedOutput | null;
+  explore_output: string | null;
+  summarise_output: SummariserResponse | null;
+  final_document_url: string | null;
+  rejection_reason: string | null;
+  rejected_at_step: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface RFPStats {
   total: number;
-  totalChange: number;
-  accepted: number;
-  acceptedChange: number;
+  totalChange?: number;
+  completed: number;
+  completedChange?: number;
   rejected: number;
-  rejectedChange: number;
+  rejectedChange?: number;
   pending: number;
-  pendingChange: number;
+  pendingChange?: number;
 }
 
 export interface RFPAnalytics {
