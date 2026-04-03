@@ -2,12 +2,14 @@ import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
+  Link,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
+import { Button } from '../components/ui/button'
 
 import type { QueryClient } from '@tanstack/react-query'
 
@@ -28,7 +30,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Ignisia - Command Center',
+        title: 'BidForge - Command Center',
       },
     ],
     links: [
@@ -39,6 +41,22 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
   }),
   shellComponent: RootDocument,
+  notFoundComponent: () => (
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-background">
+      <div className="size-20 rounded-2xl bg-destructive/10 flex items-center justify-center mb-6">
+        <span className="text-4xl text-destructive">404</span>
+      </div>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground mb-2">Page Not Found</h1>
+      <p className="text-muted-foreground mb-8 max-w-md">
+        The page you are looking for might have been moved or doesn't exist. Let's get you back on track.
+      </p>
+      <Link to="/dashboard">
+        <Button variant="default" size="lg" className="bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black">
+          Back to Dashboard
+        </Button>
+      </Link>
+    </div>
+  ),
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
@@ -48,7 +66,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <TanStackDevtools
           config={{

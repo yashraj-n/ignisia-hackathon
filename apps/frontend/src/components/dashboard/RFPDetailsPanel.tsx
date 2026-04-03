@@ -51,7 +51,7 @@ export default function RFPDetailsPanel({ rfp, onClose }: RFPDetailsPanelProps) 
             <div className="p-6 space-y-8">
               <div>
                 <h3 className="text-xs uppercase font-bold text-[#D4AF37] mb-3 tracking-wider">Status</h3>
-                <Badge variant="outline" className={clsx("font-semibold text-sm px-3 py-1", statusConfig[rfp.status])}>
+                <Badge variant="outline" className={clsx("font-semibold text-sm px-3 py-1", statusConfig[rfp.status as keyof typeof statusConfig])}>
                   {rfp.status}
                 </Badge>
               </div>
@@ -69,7 +69,7 @@ export default function RFPDetailsPanel({ rfp, onClose }: RFPDetailsPanelProps) 
                     <Server className="w-3.5 h-3.5" /> Infrastructure
                   </h3>
                   <ul className="space-y-2">
-                    {rfp.infrastructureDetected.map(item => (
+                    {rfp.infrastructureDetected?.map(item => (
                       <li key={item} className="text-sm text-[#E5E5E5] flex items-center gap-2">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#22C55E]" /> {item}
                       </li>
@@ -81,7 +81,7 @@ export default function RFPDetailsPanel({ rfp, onClose }: RFPDetailsPanelProps) 
                     <Globe className="w-3.5 h-3.5" /> Assets
                   </h3>
                   <ul className="space-y-2">
-                    {rfp.assetsDetected.map(item => (
+                    {rfp.assetsDetected?.map(item => (
                       <li key={item} className="text-sm text-[#E5E5E5] flex items-center gap-2">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#22C55E]" /> {item}
                       </li>
@@ -90,7 +90,7 @@ export default function RFPDetailsPanel({ rfp, onClose }: RFPDetailsPanelProps) 
                 </div>
               </div>
 
-              {rfp.missingFields.length > 0 && (
+              {rfp.missingFields && rfp.missingFields.length > 0 && (
                 <div>
                   <h3 className="text-xs uppercase font-bold text-[#EF4444] mb-3 tracking-wider flex items-center gap-2">
                     <AlertCircle className="w-4 h-4" /> Missing Fields Detected
@@ -108,11 +108,13 @@ export default function RFPDetailsPanel({ rfp, onClose }: RFPDetailsPanelProps) 
               )}
             </div>
             
-            <div className="p-6 mt-auto sticky top-[-100vh] bottom-0 bg-[#121212] border-t border-white/5">
-                <button className="w-full bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black font-semibold rounded-lg py-3 flex items-center justify-center gap-2 transition-colors hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]">
-                   Generate Strategy Proposal
-                </button>
-            </div>
+            {rfp.status !== 'Rejected' && (
+              <div className="p-6 mt-auto sticky top-[-100vh] bottom-0 bg-[#121212] border-t border-white/5">
+                  <button className="w-full bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black font-semibold rounded-lg py-3 flex items-center justify-center gap-2 transition-colors hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+                     Generate Strategy Proposal
+                  </button>
+              </div>
+            )}
           </motion.div>
         </>
       )}
