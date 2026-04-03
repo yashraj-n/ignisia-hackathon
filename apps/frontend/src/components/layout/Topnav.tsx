@@ -3,6 +3,7 @@ import { Search, Bell, Settings, User, LogOut, Shield } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Input } from '../ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from '@tanstack/react-router';
 
 export default function Topnav() {
   const [isMeOpen, setIsMeOpen] = useState(false);
@@ -21,16 +22,18 @@ export default function Topnav() {
   return (
     <header className="h-16 border-b border-white/10 glass-panel flex items-center justify-between px-6 shrink-0 z-10 sticky top-0">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 flex items-center justify-center">
-          <img src="/bidforge-icon.png" alt="BidForge Logo" className="w-full h-full object-contain" />
-        </div>
-        <div className="flex flex-col -gap-1">
-          <span className="font-bold text-lg tracking-tight leading-none">
-            <span className="text-white">Bid</span>
-            <span className="text-[#D4AF37]">Forge</span>
-          </span>
-          <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em] leading-none opacity-50">Enterprise</span>
-        </div>
+        <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+          <div className="w-10 h-10 flex items-center justify-center">
+            <img src="/bidforge-icon.png" alt="BidForge Logo" className="w-full h-full object-contain" />
+          </div>
+          <div className="flex flex-col -gap-1">
+            <span className="font-bold text-lg tracking-tight leading-none">
+              <span className="text-white">Bid</span>
+              <span className="text-[#D4AF37]">Forge</span>
+            </span>
+            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em] leading-none opacity-50">Enterprise</span>
+          </div>
+        </Link>
       </div>
 
       <div className="flex-1 max-w-md px-8 relative">
@@ -85,12 +88,20 @@ export default function Topnav() {
                 </div>
                 
                 <div className="p-2 space-y-1 bg-[#0A0A0A]/95">
-                  <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-white hover:bg-white/5 rounded-md transition-colors">
+                  <Link 
+                    to="/profile"
+                    onClick={() => setIsMeOpen(false)}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-white hover:bg-white/5 rounded-md transition-colors"
+                  >
                     <User className="w-4 h-4" /> My Profile
-                  </button>
-                  <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-white hover:bg-white/5 rounded-md transition-colors">
+                  </Link>
+                  <Link 
+                    to="/admin-settings"
+                    onClick={() => setIsMeOpen(false)}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-white hover:bg-white/5 rounded-md transition-colors"
+                  >
                     <Shield className="w-4 h-4" /> Admin Settings
-                  </button>
+                  </Link>
                 </div>
                 
                 <div className="p-2 border-t border-white/5 bg-[#0A0A0A]/95">
