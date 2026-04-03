@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://localhost:9000/api/company/add-competitor
+  url: http://localhost:9000/api/company/add-inventory
   body:
     type: json
     data: |
@@ -15,7 +15,9 @@ http:
         "mimeType":"text/csv",
         "extension":"csv"
       }
-  auth: inherit
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55SWQiOiI2OWNmODZjYTkyMWQyNzhlYWRmOTBiZWUiLCJlbWFpbCI6InlubmFya2U1MkBnbWFpbC5jb20iLCJpYXQiOjE3NzUyMzA0MzMsImV4cCI6MTc3NTgzNTIzM30.rO6vharvibLs5Nbir6XCX93zEK9bGc1besinkL9pZAU
 
 settings:
   encodeUrl: true

@@ -127,3 +127,66 @@ export const inventoryQueries = {
     }),
 };
 
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function getExtension(filename: string): string {
+  return filename.split('.').pop()?.toLowerCase() ?? '';
+}
+
+function getNameWithoutExtension(filename: string): string {
+  const parts = filename.split('.');
+  if (parts.length > 1) parts.pop();
+  return parts.join('.');
+}
+
+export interface UploadPayload {
+  file: File;
+}
+
+export async function uploadInventory(payload: UploadPayload): Promise<InventoryItem> {
+  const base64 = await fileToBase64(payload.file);
+  const res = await fetch(`${API_BASE}/api/company/add-inventory`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      name: getNameWithoutExtension(payload.file.name),
+      fileData: base64,
+      mimeType: payload.file.type,
+      extension: getExtension(payload.file.name),
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Upload failed');
+  }
+  const data = await res.json();
+  return data.inventory;
+}
+
+export async function uploadCompetitor(payload: UploadPayload): Promise<CompetitorItem> {
+  const base64 = await fileToBase64(payload.file);
+  const res = await fetch(`${API_BASE}/api/company/add-competitor`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      name: getNameWithoutExtension(payload.file.name),
+      fileData: base64,
+      mimeType: payload.file.type,
+      extension: getExtension(payload.file.name),
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Upload failed');
+  }
+  const data = await res.json();
+  return data.competitor;
+}
+

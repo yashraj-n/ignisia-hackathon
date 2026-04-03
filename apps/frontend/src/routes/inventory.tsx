@@ -7,6 +7,7 @@ import { clsx } from 'clsx'
 
 import { inventoryQueries } from '../store/queries'
 import type { InventoryItem, CompetitorItem } from '../lib/types'
+import { publicFileUrl } from '../lib/s3'
 import AppLayout from '../layout/AppLayout'
 import { BGPattern } from '../components/ui/bg-pattern'
 import InventoryUploadModal from '@/components/inventory/InventoryUploadModal'
@@ -168,7 +169,9 @@ function InventorySection({ title, subtitle, icon: Icon, items, isLoading, accen
           </div>
         ) : (
           <div className="divide-y divide-white/5">
-            {items.map((item, idx) => (
+            {items.map((item, idx) => {
+              const fileHref = item.s3_url ? publicFileUrl(item.s3_url) : null
+              return (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, y: 10 }}
@@ -177,18 +180,34 @@ function InventorySection({ title, subtitle, icon: Icon, items, isLoading, accen
                 className="p-4 hover:bg-white/[0.02] transition-colors group cursor-default"
               >
                 <div className="flex items-start gap-3">
-                  <div className={clsx('p-2 rounded-lg shrink-0 mt-0.5', c.iconBg)}>
-                    <FileText className="w-4 h-4" />
-                  </div>
+                  {fileHref ? (
+                    <a
+                      href={fileHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Open file"
+                      className={clsx(
+                        'p-2 rounded-lg shrink-0 mt-0.5 transition-colors hover:opacity-90',
+                        c.iconBg
+                      )}
+                    >
+                      <FileText className="w-4 h-4" />
+                    </a>
+                  ) : (
+                    <div className={clsx('p-2 rounded-lg shrink-0 mt-0.5', c.iconBg)}>
+                      <FileText className="w-4 h-4" />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="text-white font-medium text-sm truncate">{item.name}</h3>
-                      {item.s3_url && (
+                      {fileHref && (
                         <a
-                          href={item.s3_url}
+                          href={fileHref}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-muted-foreground hover:text-primary transition-colors shrink-0 opacity-0 group-hover:opacity-100"
+                          title="Open in new tab"
+                          className="text-muted-foreground hover:text-primary transition-colors shrink-0"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
@@ -204,7 +223,8 @@ function InventorySection({ title, subtitle, icon: Icon, items, isLoading, accen
                   </div>
                 </div>
               </motion.div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

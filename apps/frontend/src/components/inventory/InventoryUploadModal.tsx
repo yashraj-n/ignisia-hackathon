@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
-import { FileUp, X, CheckCircle2, Loader2, FileType2, FileSpreadsheet } from 'lucide-react';
+import { FileUp, X, CheckCircle2, Loader2, FileType2, FileSpreadsheet, AlertCircle } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { uploadInventory, uploadCompetitor } from '../../store/queries';
 
 interface InventoryUploadModalProps {
   isOpen: boolean;
@@ -18,58 +19,34 @@ function getFileType(file: File): AcceptedFileType {
   return 'csv';
 }
 
-const steps = {
-  inventory: [
-    "Uploading document...",
-    "Parsing contents...",
-    "Extracting asset data...",
-    "Updating inventory...",
-  ],
-  competitor: [
-    "Uploading document...",
-    "Parsing contents...",
-    "Analyzing competitor data...",
-    "Indexing intelligence...",
-  ],
-};
-
 export default function InventoryUploadModal({ isOpen, onClose, target }: InventoryUploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [fileType, setFileType] = useState<AcceptedFileType | null>(null);
-  const [currentStep, setCurrentStep] = useState(-1);
-  const [isComplete, setIsComplete] = useState(false);
-
   const queryClient = useQueryClient();
-  const currentSteps = steps[target];
 
-  useEffect(() => {
-    if (file && currentStep === -1) {
-      setCurrentStep(0);
-    }
-  }, [file]);
-
-  useEffect(() => {
-    if (currentStep >= 0 && currentStep < currentSteps.length) {
-      const timer = setTimeout(() => {
-        setCurrentStep(prev => prev + 1);
-      }, 1200);
-      return () => clearTimeout(timer);
-    } else if (currentStep === currentSteps.length) {
-      setIsComplete(true);
+  const mutation = useMutation({
+    mutationFn: (f: File) =>
+      target === 'inventory' ? uploadInventory({ file: f }) : uploadCompetitor({ file: f }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [target === 'inventory' ? 'inventory' : 'competitors'] });
       setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: [target === 'inventory' ? 'inventory' : 'competitors'] });
         onClose();
         resetState();
-      }, 1500);
-    }
-  }, [currentStep, onClose, queryClient, target]);
+      }, 1200);
+    },
+  });
 
-  const resetState = () => {
+  const resetState = useCallback(() => {
     setFile(null);
     setFileType(null);
-    setCurrentStep(-1);
-    setIsComplete(false);
-  };
+    mutation.reset();
+  }, [mutation]);
+
+  useEffect(() => {
+    if (file && !mutation.isPending && !mutation.isSuccess && !mutation.isError) {
+      mutation.mutate(file);
+    }
+  }, [file]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -78,6 +55,7 @@ export default function InventoryUploadModal({ isOpen, onClose, target }: Invent
       'application/vnd.ms-excel': ['.csv'],
     },
     maxFiles: 1,
+    disabled: mutation.isPending,
     onDrop: acceptedFiles => {
       if (acceptedFiles.length > 0) {
         const f = acceptedFiles[0];
@@ -88,13 +66,12 @@ export default function InventoryUploadModal({ isOpen, onClose, target }: Invent
   });
 
   const handleClose = () => {
-    if (currentStep >= 0 && !isComplete) return;
+    if (mutation.isPending) return;
     onClose();
     resetState();
   };
 
   const titleLabel = target === 'inventory' ? 'Upload Inventory Document' : 'Upload Competitor Document';
-
 
   return (
     <AnimatePresence>
@@ -114,20 +91,19 @@ export default function InventoryUploadModal({ isOpen, onClose, target }: Invent
             transition={{ type: "spring", stiffness: 400, damping: 30, mass: 0.8 }}
             className="relative w-full max-w-lg glass-panel rounded-2xl overflow-hidden shadow-2xl border border-white/10"
           >
-            {/* Header */}
             <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#111111]/95 backdrop-blur-md">
               <div className="flex items-center gap-3">
                 <div className={clsx(
                   'p-2 rounded-lg',
                   target === 'inventory' ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent'
                 )}>
-                  {target === 'inventory' ? <FileUp className="w-5 h-5" /> : <FileUp className="w-5 h-5" />}
+                  <FileUp className="w-5 h-5" />
                 </div>
                 <h2 className="text-xl font-bold text-white tracking-tight">{titleLabel}</h2>
               </div>
               <button
                 onClick={handleClose}
-                disabled={currentStep >= 0 && !isComplete}
+                disabled={mutation.isPending}
                 className="p-2 text-muted-foreground hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 disabled:opacity-50"
               >
                 <X className="w-5 h-5" />
@@ -203,7 +179,6 @@ export default function InventoryUploadModal({ isOpen, onClose, target }: Invent
                 </div>
               ) : (
                 <div className="py-4">
-                  {/* File info */}
                   <div className="flex items-center gap-4 bg-[#1A1A1A] p-4 rounded-xl border border-white/5 mb-6">
                     <div className={clsx(
                       'p-3 rounded-lg shrink-0',
@@ -225,61 +200,73 @@ export default function InventoryUploadModal({ isOpen, onClose, target }: Invent
                         </span>
                       </div>
                     </div>
-                    {isComplete && <CheckCircle2 className="w-6 h-6 text-[#22C55E] shrink-0" />}
+                    {mutation.isSuccess && <CheckCircle2 className="w-6 h-6 text-[#22C55E] shrink-0" />}
+                    {mutation.isError && <AlertCircle className="w-6 h-6 text-[#EF4444] shrink-0" />}
                   </div>
 
-                  {/* Steps */}
                   <div className="space-y-3">
-                    {currentSteps.map((step, index) => {
-                      const isPast = currentStep > index;
-                      const isCurrent = currentStep === index;
-                      const isPending = currentStep < index;
+                    {mutation.isPending && (
+                      <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className={clsx(
+                          "flex items-center gap-3 p-3 rounded-lg border",
+                          target === 'inventory'
+                            ? "bg-primary/10 border-primary/30"
+                            : "bg-accent/10 border-accent/30"
+                        )}
+                      >
+                        <Loader2 className={clsx(
+                          "w-5 h-5 animate-spin shrink-0",
+                          target === 'inventory' ? "text-primary" : "text-accent"
+                        )} />
+                        <span className={clsx(
+                          "text-sm font-medium",
+                          target === 'inventory' ? "text-primary" : "text-accent"
+                        )}>
+                          {target === 'inventory' ? 'Uploading & processing inventory...' : 'Uploading & analyzing competitor data...'}
+                        </span>
+                      </motion.div>
+                    )}
 
-                      return (
+                    {mutation.isSuccess && (
+                      <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-[#22C55E]/30 bg-[#22C55E]/10"
+                      >
+                        <CheckCircle2 className="w-5 h-5 text-[#22C55E] shrink-0" />
+                        <span className="text-sm font-medium text-[#22C55E]">Upload complete</span>
+                      </motion.div>
+                    )}
+
+                    {mutation.isError && (
+                      <div className="space-y-3">
                         <motion.div
-                          key={step}
                           initial={{ opacity: 0, x: -10 }}
-                          animate={{
-                            opacity: isPending ? 0.4 : 1,
-                            x: 0,
-                            scale: isCurrent ? 1.02 : 1,
-                          }}
-                          className={clsx(
-                            "flex items-center gap-3 p-3 rounded-lg transition-colors border",
-                            isCurrent
-                              ? target === 'inventory'
-                                ? "bg-primary/10 border-primary/30"
-                                : "bg-accent/10 border-accent/30"
-                              : "border-transparent"
-                          )}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex items-center gap-3 p-3 rounded-lg border border-[#EF4444]/30 bg-[#EF4444]/10"
                         >
-                          {isPast ? (
-                            <CheckCircle2 className="w-5 h-5 text-[#22C55E] shrink-0" />
-                          ) : isCurrent ? (
-                            <Loader2 className={clsx(
-                              "w-5 h-5 animate-spin shrink-0",
-                              target === 'inventory' ? "text-primary" : "text-accent"
-                            )} />
-                          ) : (
-                            <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 shrink-0" />
-                          )}
-                          <span className={clsx(
-                            "text-sm font-medium",
-                            isCurrent
-                              ? target === 'inventory' ? "text-primary" : "text-accent"
-                              : isPast ? "text-white" : "text-muted-foreground"
-                          )}>
-                            {step}
+                          <AlertCircle className="w-5 h-5 text-[#EF4444] shrink-0" />
+                          <span className="text-sm font-medium text-[#EF4444]">
+                            {mutation.error instanceof Error ? mutation.error.message : 'Upload failed'}
                           </span>
                         </motion.div>
-                      );
-                    })}
+                        <button
+                          onClick={() => {
+                            resetState();
+                          }}
+                          className="w-full py-2.5 rounded-lg text-sm font-semibold border border-white/10 text-white hover:bg-white/5 transition-colors"
+                        >
+                          Try Again
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Bottom accent */}
             <div className={clsx(
               "h-px w-full bg-gradient-to-r from-transparent to-transparent",
               target === 'inventory' ? 'via-primary/40' : 'via-accent/40'
