@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
 import { AnimatedCharacters } from "../auth/AnimatedCharacters";
 import { SignInForm, SignUpForm } from "../auth/AuthForms";
 
@@ -18,11 +17,13 @@ const AuthFormContainer = ({
 }) => {
   return (
     <div className="flex flex-col items-center justify-center h-full max-w-lg mx-auto px-6">
-      <div className="lg:hidden flex items-center justify-center gap-2 text-lg font-semibold mb-12">
-        <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Sparkles className="size-4 text-primary" />
+      <div className="lg:hidden flex items-center justify-center gap-3 mb-12">
+        <div className="w-10 h-10 flex items-center justify-center p-1 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
+          <img src="/bidforge-icon.png" alt="BidForge Logo" className="w-full h-full object-contain" />
         </div>
-        <span className="font-bold">BidForge</span>
+        <span className="font-bold text-xl tracking-tight leading-none text-white">
+          Bid<span className="text-[#D4AF37]">Forge</span>
+        </span>
       </div>
 
       <div className="w-full relative transition-all duration-300">

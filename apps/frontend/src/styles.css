@@ -119,10 +119,11 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.08),
     transparent
   );
-  animation: shimmer 2s infinite linear;
+  animation: shimmer 1.8s infinite linear;
 }
 
 .scroll-faint-top {

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Sparkles } from "lucide-react";
 import { EyeBall, Pupil } from "./CharacterEyes";
 
 interface AnimatedCharactersProps {
@@ -92,27 +91,37 @@ export const AnimatedCharacters = ({
   const orangePos = calculatePosition(orangeRef);
 
   return (
-    <div className="relative hidden lg:flex flex-col justify-between bg-gradient-to-br from-primary/90 via-primary to-primary/80 p-12 text-primary-foreground min-h-screen">
+    <div className="relative hidden lg:flex flex-col justify-between bg-[#050505] p-12 text-primary-foreground min-h-screen overflow-hidden">
+      {/* Chromatic Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(97,43,107,0.15),transparent_70%)]" />
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:30px_30px]" />
+      
       <div className="relative z-20">
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          <div className="size-8 rounded-lg bg-primary-foreground/10 backdrop-blur-sm flex items-center justify-center">
-            <Sparkles className="size-4" />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 flex items-center justify-center p-1 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
+            <img src="/bidforge-icon.png" alt="BidForge Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="font-bold">BidForge</span>
+          <div className="flex flex-col -gap-1">
+            <span className="font-bold text-xl tracking-tight leading-none">
+              <span className="text-white">Bid</span>
+              <span className="text-[#D4AF37]">Forge</span>
+            </span>
+            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em] leading-none opacity-50">Enterprise</span>
+          </div>
         </div>
       </div>
 
       <div className="relative z-20 flex items-end justify-center h-[500px]">
         <div className="relative" style={{ width: '550px', height: '400px' }}>
-          {/* Purple Character */}
+          {/* Deep Purple Character */}
           <div 
             ref={purpleRef}
-            className="absolute bottom-0 transition-all duration-700 ease-in-out"
+            className="absolute bottom-0 transition-all duration-700 ease-in-out border border-white/5"
             style={{
               left: '70px',
               width: '180px',
               height: (isTyping || (passwordLength > 0 && !showPassword)) ? '440px' : '400px',
-              backgroundColor: '#6C3FF5',
+              backgroundColor: '#612B6B',
               borderRadius: '10px 10px 0 0',
               zIndex: 1,
               transform: (passwordLength > 0 && showPassword)
@@ -121,6 +130,7 @@ export const AnimatedCharacters = ({
                   ? `skewX(${(purplePos.bodySkew || 0) - 12}deg) translateX(40px)` 
                   : `skewX(${purplePos.bodySkew || 0}deg)`,
               transformOrigin: 'bottom center',
+              boxShadow: 'inset 0 20px 40px rgba(255,255,255,0.05), 0 0 40px rgba(97,43,107,0.2)',
             }}
           >
             <div 
@@ -131,13 +141,13 @@ export const AnimatedCharacters = ({
               }}
             >
               <EyeBall 
-                size={18} pupilSize={7} maxDistance={5} eyeColor="white" pupilColor="#2D2D2D" 
+                size={18} pupilSize={7} maxDistance={5} eyeColor="#E5E5E5" pupilColor="#0A0A0A" 
                 isBlinking={isPurpleBlinking}
                 forceLookX={(passwordLength > 0 && showPassword) ? (isPurplePeeking ? 4 : -4) : isLookingAtEachOther ? 3 : undefined}
                 forceLookY={(passwordLength > 0 && showPassword) ? (isPurplePeeking ? 5 : -4) : isLookingAtEachOther ? 4 : undefined}
               />
               <EyeBall 
-                size={18} pupilSize={7} maxDistance={5} eyeColor="white" pupilColor="#2D2D2D" 
+                size={18} pupilSize={7} maxDistance={5} eyeColor="#E5E5E5" pupilColor="#0A0A0A" 
                 isBlinking={isPurpleBlinking}
                 forceLookX={(passwordLength > 0 && showPassword) ? (isPurplePeeking ? 4 : -4) : isLookingAtEachOther ? 3 : undefined}
                 forceLookY={(passwordLength > 0 && showPassword) ? (isPurplePeeking ? 5 : -4) : isLookingAtEachOther ? 4 : undefined}
@@ -145,15 +155,15 @@ export const AnimatedCharacters = ({
             </div>
           </div>
 
-          {/* Black Character */}
+          {/* Berry Magenta Character */}
           <div 
             ref={blackRef}
-            className="absolute bottom-0 transition-all duration-700 ease-in-out"
+            className="absolute bottom-0 transition-all duration-700 ease-in-out border border-white/5"
             style={{
               left: '240px',
               width: '120px',
               height: '310px',
-              backgroundColor: '#2D2D2D',
+              backgroundColor: '#AD3964',
               borderRadius: '8px 8px 0 0',
               zIndex: 2,
               transform: (passwordLength > 0 && showPassword)
@@ -164,6 +174,7 @@ export const AnimatedCharacters = ({
                     ? `skewX(${(blackPos.bodySkew || 0) * 1.5}deg)` 
                     : `skewX(${blackPos.bodySkew || 0}deg)`,
               transformOrigin: 'bottom center',
+              boxShadow: 'inset 0 15px 30px rgba(255,255,255,0.05), 0 0 30px rgba(173,57,100,0.2)',
             }}
           >
             <div 
@@ -174,13 +185,13 @@ export const AnimatedCharacters = ({
               }}
             >
               <EyeBall 
-                size={16} pupilSize={6} maxDistance={4} eyeColor="white" pupilColor="#2D2D2D" 
+                size={16} pupilSize={6} maxDistance={4} eyeColor="#E5E5E5" pupilColor="#0A0A0A" 
                 isBlinking={isBlackBlinking}
                 forceLookX={(passwordLength > 0 && showPassword) ? -4 : isLookingAtEachOther ? 0 : undefined}
                 forceLookY={(passwordLength > 0 && showPassword) ? -4 : isLookingAtEachOther ? -4 : undefined}
               />
               <EyeBall 
-                size={16} pupilSize={6} maxDistance={4} eyeColor="white" pupilColor="#2D2D2D" 
+                size={16} pupilSize={6} maxDistance={4} eyeColor="#E5E5E5" pupilColor="#0A0A0A" 
                 isBlinking={isBlackBlinking}
                 forceLookX={(passwordLength > 0 && showPassword) ? -4 : isLookingAtEachOther ? 0 : undefined}
                 forceLookY={(passwordLength > 0 && showPassword) ? -4 : isLookingAtEachOther ? -4 : undefined}
@@ -188,19 +199,20 @@ export const AnimatedCharacters = ({
             </div>
           </div>
 
-          {/* Orange Character */}
+          {/* Sunset Orange Character */}
           <div 
             ref={orangeRef}
-            className="absolute bottom-0 transition-all duration-700 ease-in-out"
+            className="absolute bottom-0 transition-all duration-700 ease-in-out border border-white/10"
             style={{
               left: '0px',
               width: '240px',
               height: '200px',
               zIndex: 3,
-              backgroundColor: '#FF9B6B',
+              backgroundColor: '#F28D5A',
               borderRadius: '120px 120px 0 0',
               transform: (passwordLength > 0 && showPassword) ? `skewX(0deg)` : `skewX(${orangePos.bodySkew || 0}deg)`,
               transformOrigin: 'bottom center',
+              boxShadow: 'inset 0 20px 40px rgba(255,255,255,0.15), 0 0 25px rgba(242,141,90,0.15)',
             }}
           >
             <div 
@@ -210,24 +222,25 @@ export const AnimatedCharacters = ({
                 top: (passwordLength > 0 && showPassword) ? `${85}px` : `${90 + (orangePos.faceY || 0)}px`,
               }}
             >
-              <Pupil size={12} maxDistance={5} pupilColor="#2D2D2D" forceLookX={(passwordLength > 0 && showPassword) ? -5 : undefined} forceLookY={(passwordLength > 0 && showPassword) ? -4 : undefined} />
-              <Pupil size={12} maxDistance={5} pupilColor="#2D2D2D" forceLookX={(passwordLength > 0 && showPassword) ? -5 : undefined} forceLookY={(passwordLength > 0 && showPassword) ? -4 : undefined} />
+              <Pupil size={12} maxDistance={5} pupilColor="#0A0A0A" forceLookX={(passwordLength > 0 && showPassword) ? -5 : undefined} forceLookY={(passwordLength > 0 && showPassword) ? -4 : undefined} />
+              <Pupil size={12} maxDistance={5} pupilColor="#0A0A0A" forceLookX={(passwordLength > 0 && showPassword) ? -5 : undefined} forceLookY={(passwordLength > 0 && showPassword) ? -4 : undefined} />
             </div>
           </div>
 
-          {/* Yellow Character */}
+          {/* Canary Yellow Character */}
           <div 
             ref={yellowRef}
-            className="absolute bottom-0 transition-all duration-700 ease-in-out"
+            className="absolute bottom-0 transition-all duration-700 ease-in-out border border-white/20"
             style={{
               left: '310px',
               width: '140px',
               height: '230px',
-              backgroundColor: '#E8D754',
+              backgroundColor: '#F8EE6A',
               borderRadius: '70px 70px 0 0',
               zIndex: 4,
               transform: (passwordLength > 0 && showPassword) ? `skewX(0deg)` : `skewX(${yellowPos.bodySkew || 0}deg)`,
               transformOrigin: 'bottom center',
+              boxShadow: 'inset 0 15px 30px rgba(255,255,255,0.3), 0 0 20px rgba(248,238,106,0.1)',
             }}
           >
             <div 
@@ -237,11 +250,11 @@ export const AnimatedCharacters = ({
                 top: (passwordLength > 0 && showPassword) ? `${35}px` : `${40 + (yellowPos.faceY || 0)}px`,
               }}
             >
-              <Pupil size={12} maxDistance={5} pupilColor="#2D2D2D" forceLookX={(passwordLength > 0 && showPassword) ? -5 : undefined} forceLookY={(passwordLength > 0 && showPassword) ? -4 : undefined} />
-              <Pupil size={12} maxDistance={5} pupilColor="#2D2D2D" forceLookX={(passwordLength > 0 && showPassword) ? -5 : undefined} forceLookY={(passwordLength > 0 && showPassword) ? -4 : undefined} />
+              <Pupil size={12} maxDistance={5} pupilColor="#0A0A0A" forceLookX={(passwordLength > 0 && showPassword) ? -5 : undefined} forceLookY={(passwordLength > 0 && showPassword) ? -4 : undefined} />
+              <Pupil size={12} maxDistance={5} pupilColor="#0A0A0A" forceLookX={(passwordLength > 0 && showPassword) ? -5 : undefined} forceLookY={(passwordLength > 0 && showPassword) ? -4 : undefined} />
             </div>
             <div 
-              className="absolute w-20 h-[4px] bg-[#2D2D2D] rounded-full transition-all duration-200 ease-out"
+              className="absolute w-20 h-[4px] bg-[#0A0A0A]/30 rounded-full transition-all duration-200 ease-out"
               style={{
                 left: (passwordLength > 0 && showPassword) ? `${10}px` : `${40 + (yellowPos.faceX || 0)}px`,
                 top: (passwordLength > 0 && showPassword) ? `${88}px` : `${88 + (yellowPos.faceY || 0)}px`,
@@ -251,15 +264,11 @@ export const AnimatedCharacters = ({
         </div>
       </div>
 
-      <div className="relative z-20 flex items-center gap-8 text-sm text-primary-foreground/60">
-        <a href="#" className="hover:text-primary-foreground transition-colors">Privacy Policy</a>
-        <a href="#" className="hover:text-primary-foreground transition-colors">Terms of Service</a>
-        <a href="#" className="hover:text-primary-foreground transition-colors">Contact</a>
-      </div>
-
-      <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
-      <div className="absolute top-1/4 right-1/4 size-64 bg-primary-foreground/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 left-1/4 size-96 bg-primary-foreground/5 rounded-full blur-3xl" />
+      {/* Decorative Glows using Palette */}
+      <div className="absolute top-1/4 right-1/4 size-64 bg-magenta/5 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#AD3964' }}  />
+      <div className="absolute bottom-1/4 left-1/4 size-96 bg-purple/10 rounded-full blur-3xl opacity-20" style={{ backgroundColor: '#612B6B' }} />
     </div>
   );
 };
+
+

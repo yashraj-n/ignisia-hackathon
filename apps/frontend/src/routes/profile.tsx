@@ -1,14 +1,37 @@
 import { createFileRoute } from '@tanstack/react-router'
 import MainLayout from '../components/layout/MainLayout'
-import { User, Mail, Shield, Bell, Moon, Globe, Camera } from 'lucide-react'
+import { User, Bell, Camera } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Avatar, AvatarFallback } from '../components/ui/avatar'
+import { useEffect, useState } from 'react'
+import { useRouter } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/profile')({
   component: ProfileComponent,
 })
 
 function ProfileComponent() {
+  const router = useRouter()
+  const [profile, setProfile] = useState<{ name: string; login_email: string; size: number } | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+
+    fetch('http://localhost:9000/api/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.company) {
+          setProfile(data.company)
+        }
+      })
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false))
+  }, [router])
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -40,18 +63,17 @@ function ProfileComponent() {
             <div className="flex items-center gap-6">
               <div className="relative group">
                 <Avatar className="h-24 w-24 border-2 border-[#D4AF37]/30 shadow-[0_0_20px_rgba(212,175,55,0.15)] bg-[#1A1A1A]">
-                  <AvatarFallback className="bg-transparent text-[#D4AF37] text-3xl font-bold">JD</AvatarFallback>
+                  <AvatarFallback className="bg-transparent text-[#D4AF37] text-3xl font-bold">{profile?.name ? profile.name.slice(0, 2).toUpperCase() : '..'}</AvatarFallback>
                 </Avatar>
                 <button className="absolute bottom-0 right-0 p-2 bg-[#D4AF37] text-black rounded-full shadow-lg hover:scale-110 transition-transform">
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-white mb-1">John Doe</h1>
-                <p className="text-muted-foreground flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-[#D4AF37]" /> Enterprise Admin
-                </p>
-              </div>
+                <h1 className="text-3xl font-bold text-white mb-1">
+                  {loading ? 'Loading...' : profile?.name || 'Unknown'}
+                </h1>
+               </div>
             </div>
             <div className="flex gap-3">
               <button className="px-4 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition-colors text-sm font-medium text-white">
@@ -72,20 +94,23 @@ function ProfileComponent() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Full Name</label>
-                    <div className="p-3 bg-[#0A0A0A] border border-white/5 rounded-lg text-white">John Doe</div>
+                    <label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Company Name</label>
+                    <div className="p-3 bg-[#0A0A0A] border border-white/5 rounded-lg text-white">
+                      {loading ? 'Loading...' : profile?.name || 'Unknown'}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Email Address</label>
-                    <div className="p-3 bg-[#0A0A0A] border border-white/5 rounded-lg text-white">john@bidforge.com</div>
+                    <div className="p-3 bg-[#0A0A0A] border border-white/5 rounded-lg text-white">
+                      {loading ? '...' : profile?.login_email || ''}
+                    </div>
                   </div>
+
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Role</label>
-                    <div className="p-3 bg-[#0A0A0A] border border-white/5 rounded-lg text-[#D4AF37] font-semibold">Chief Proposal Architect</div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Company</label>
-                    <div className="p-3 bg-[#0A0A0A] border border-white/5 rounded-lg text-white">Ignisia Corp</div>
+                    <label className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Company Size</label>
+                    <div className="p-3 bg-[#0A0A0A] border border-white/5 rounded-lg text-white">
+                      {loading ? '...' : profile?.size || 'N/A'}
+                    </div>
                   </div>
                 </div>
               </motion.section>
@@ -110,49 +135,6 @@ function ProfileComponent() {
                       </div>
                     </div>
                   ))}
-                </div>
-              </motion.section>
-            </div>
-
-            {/* Right Column: Settings */}
-            <div className="space-y-8">
-              <motion.section variants={itemVariants} className="glass-panel p-6 rounded-2xl border border-white/10">
-                <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-wider">System Settings</h3>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center">
-                        <Moon className="w-4 h-4 text-[#D4AF37]" />
-                      </div>
-                      <span className="text-sm text-white">Dark Mode</span>
-                    </div>
-                    <span className="text-xs text-[#D4AF37] font-bold">ENABLED</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-[#3B82F6]/10 flex items-center justify-center">
-                        <Globe className="w-4 h-4 text-[#3B82F6]" />
-                      </div>
-                      <span className="text-sm text-white">Public Profile</span>
-                    </div>
-                    <div className="w-8 h-4 bg-white/5 rounded-full relative cursor-pointer"></div>
-                  </div>
-                </div>
-              </motion.section>
-
-              <motion.section variants={itemVariants} className="glass-panel p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-[#D4AF37]/5 to-transparent">
-                <h3 className="text-sm font-bold text-[#D4AF37] mb-4 uppercase tracking-wider">Storage Usage</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-end mb-1">
-                    <span className="text-2xl font-bold text-white">4.2<span className="text-xs text-muted-foreground ml-1">GB</span></span>
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-tighter">Of 50 GB Used</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#D4AF37] w-[8.4%] shadow-[0_0_10px_#D4AF37]"></div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground italic leading-tight">
-                    Your Enterprise plan includes priority AI processing and unlimited proposal analysis.
-                  </p>
                 </div>
               </motion.section>
             </div>

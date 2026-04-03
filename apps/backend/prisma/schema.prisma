@@ -18,8 +18,23 @@ model Company {
   verification_token String?
   verification_token_expires_at DateTime?
   competitors    Competitor[]
+  inventories    Inventory[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model Inventory {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String @db.ObjectId
+  name      String
+  s3_url    String
+  information String
+
+  company   Company @relation(fields: [companyId], references: [id])
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Competitor {
