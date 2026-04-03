@@ -108,11 +108,13 @@ export default function RFPDetailsPanel({ rfp, onClose }: RFPDetailsPanelProps) 
               )}
             </div>
             
-            <div className="p-6 mt-auto sticky top-[-100vh] bottom-0 bg-[#121212] border-t border-white/5">
-                <button className="w-full bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black font-semibold rounded-lg py-3 flex items-center justify-center gap-2 transition-colors hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]">
-                   Generate Strategy Proposal
-                </button>
-            </div>
+            {rfp.status !== 'Rejected' && (
+              <div className="p-6 mt-auto sticky top-[-100vh] bottom-0 bg-[#121212] border-t border-white/5">
+                  <button className="w-full bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black font-semibold rounded-lg py-3 flex items-center justify-center gap-2 transition-colors hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+                     Generate Strategy Proposal
+                  </button>
+              </div>
+            )}
           </motion.div>
         </>
       )}
