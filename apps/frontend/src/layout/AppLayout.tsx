@@ -12,9 +12,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <ShapeLandingHero />
       </div>
       <div className="relative z-10 flex h-full w-full">
-        <Sidebar isCollapsed={isSidebarCollapsed} />
+        <Sidebar 
+          isCollapsed={isSidebarCollapsed} 
+          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+        />
         <div className="flex flex-col flex-1 min-w-0 bg-transparent">
-          <Topnav onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} isSidebarCollapsed={isSidebarCollapsed} />
+          <Topnav />
           <main className="flex-1 overflow-auto relative">
             {children}
           </main>

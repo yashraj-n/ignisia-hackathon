@@ -11,55 +11,71 @@
 }
 
 :root {
+  /* Dark theme - main background is deep black */
   --background: #0A0A0A;
-  --foreground: #FFFFFF;
-  --card: #121212;
-  --card-foreground: #FFFFFF;
-  --popover: #121212;
-  --popover-foreground: #FFFFFF;
-  --primary: #D4AF37;
+  --foreground: #F5F5F5;
+  --card: #111111;
+  --card-foreground: #F5F5F5;
+  --popover: #111111;
+  --popover-foreground: #F5F5F5;
+
+  /* Primary: warm yellow from palette */
+  --primary: #EAB308;
   --primary-foreground: #0A0A0A;
-  --secondary: #1F1F1F;
+
+  /* Secondary: deep purple from palette */
+  --secondary: #1A1A1A;
   --secondary-foreground: #E5E5E5;
-  --muted: #1A1A1A;
+
+  --muted: #161616;
   --muted-foreground: #9CA3AF;
-  --accent: #D4AF37;
+
+  /* Accent: orange from palette */
+  --accent: #E8854A;
   --accent-foreground: #0A0A0A;
-  --destructive: #EF4444;
+
+  --destructive: #C84B6B;
   --destructive-foreground: #FFFFFF;
   --success: #22C55E;
   --warning: #FACC15;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: rgba(212, 175, 55, 0.4);
+
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: rgba(234, 179, 8, 0.4);
   --radius: 0.75rem;
 
+  /* Custom palette colors */
+  --palette-yellow: #EAB308;
+  --palette-orange: #E8854A;
+  --palette-crimson: #C84B6B;
+  --palette-purple: #5B2D6E;
+
   /* Custom Glows */
-  --glow-gold: rgba(212, 175, 55, 0.2);
+  --glow-primary: rgba(234, 179, 8, 0.2);
 }
 
 .dark {
   --background: #0A0A0A;
-  --foreground: #FFFFFF;
-  --card: #121212;
-  --card-foreground: #FFFFFF;
-  --popover: #121212;
-  --popover-foreground: #FFFFFF;
-  --primary: #D4AF37;
+  --foreground: #F5F5F5;
+  --card: #111111;
+  --card-foreground: #F5F5F5;
+  --popover: #111111;
+  --popover-foreground: #F5F5F5;
+  --primary: #EAB308;
   --primary-foreground: #0A0A0A;
-  --secondary: #1F1F1F;
+  --secondary: #1A1A1A;
   --secondary-foreground: #E5E5E5;
-  --muted: #1A1A1A;
+  --muted: #161616;
   --muted-foreground: #9CA3AF;
-  --accent: #D4AF37;
+  --accent: #E8854A;
   --accent-foreground: #0A0A0A;
-  --destructive: #EF4444;
+  --destructive: #C84B6B;
   --destructive-foreground: #FFFFFF;
   --success: #22C55E;
   --warning: #FACC15;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: rgba(212, 175, 55, 0.4);
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: rgba(234, 179, 8, 0.4);
 }
 
 @theme inline {
@@ -136,8 +152,8 @@
   }
   body {
     @apply bg-background text-foreground tracking-wide;
-    background-image: radial-gradient(circle at 50% -20%, rgba(212, 175, 55, 0.15), transparent 40%),
-                      radial-gradient(circle at 100% 50%, rgba(255, 255, 255, 0.03), transparent 30%);
+    background-image: radial-gradient(circle at 50% -20%, rgba(234, 179, 8, 0.08), transparent 40%),
+                      radial-gradient(circle at 100% 50%, rgba(232, 133, 74, 0.04), transparent 30%);
     background-attachment: fixed;
   }
   html {
@@ -146,7 +162,7 @@
 }
 
 .glass-panel {
-  @apply bg-[#121212]/80 backdrop-blur-xl border border-white/10;
+  @apply bg-[#111111]/80 backdrop-blur-xl border border-white/[0.08];
 }
 
 .hover-glow {
@@ -154,5 +170,6 @@
 }
 
 .hover-glow:hover {
-  @apply border-[#D4AF37]/40 shadow-[0_0_15px_rgba(212,175,55,0.2)];
+  box-shadow: 0 0 15px rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.3);
 }

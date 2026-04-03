@@ -10,12 +10,12 @@ function AnimatedNumber({ value }: { value: number }) {
   useEffect(() => {
     let startTime: number;
     let animationFrame: number;
-    const duration = 1500; // 1.5s duration for smoothness
+    const duration = 1500;
     
     const animate = (time: number) => {
       if (!startTime) startTime = time;
       const progress = Math.min((time - startTime) / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 4); // easeOutQuart
+      const ease = 1 - Math.pow(1 - progress, 4);
       setCount(Math.floor(ease * value));
       
       if (progress < 1) {
@@ -40,12 +40,12 @@ interface StatCardProps {
 
 const variants = {
   total: {
-    color: "text-[#D4AF37]",
-    bg: "bg-[#D4AF37]/10",
+    color: "text-primary",
+    bg: "bg-primary/10",
     border: "border-white/5",
     glow: "",
-    hoverBorder: "group-hover:border-[#D4AF37]/40",
-    hoverGlow: "group-hover:shadow-[0_10px_30px_-10px_rgba(212,175,55,0.2)]",
+    hoverBorder: "group-hover:border-primary/40",
+    hoverGlow: "group-hover:shadow-[0_10px_30px_-10px_rgba(234,179,8,0.2)]",
   },
   accepted: {
     color: "text-[#22C55E]",
@@ -56,12 +56,12 @@ const variants = {
     hoverGlow: "group-hover:shadow-[0_10px_30px_-10px_rgba(34,197,94,0.2)]",
   },
   rejected: {
-    color: "text-[#EF4444]",
-    bg: "bg-[#EF4444]/10",
+    color: "text-destructive",
+    bg: "bg-destructive/10",
     border: "border-white/5",
     glow: "",
-    hoverBorder: "group-hover:border-[#EF4444]/40",
-    hoverGlow: "group-hover:shadow-[0_10px_30px_-10px_rgba(239,68,68,0.2)]",
+    hoverBorder: "group-hover:border-destructive/40",
+    hoverGlow: "group-hover:shadow-[0_10px_30px_-10px_rgba(200,75,107,0.2)]",
   },
   pending: {
     color: "text-[#FACC15]",
@@ -114,7 +114,7 @@ export default function StatCard({ title, value, change, icon: Icon, variant }: 
         <span className="text-3xl font-bold text-white tracking-tight">
           <AnimatedNumber value={value} />
         </span>
-        <div className={clsx("flex items-center text-sm font-medium", isPositive ? "text-[#22C55E]" : "text-[#EF4444]")}>
+        <div className={clsx("flex items-center text-sm font-medium", isPositive ? "text-[#22C55E]" : "text-destructive")}>
           {isPositive ? <ArrowUpRight className="w-4 h-4 mr-1" /> : <ArrowDownRight className="w-4 h-4 mr-1" />}
           {Math.abs(change)}%
         </div>
