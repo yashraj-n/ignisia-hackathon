@@ -54,6 +54,7 @@ export async function addCompetitorRoute(fastify: FastifyInstance) {
             return { ok: true, competitor };
         } catch (error) {
             if (error instanceof z.ZodError) {
+                console.error(error);
                 throw fastify.httpErrors.badRequest(error.issues.map((issue) => issue.message).join(", "));
             }
             throw error;
