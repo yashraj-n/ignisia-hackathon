@@ -12,6 +12,8 @@ import { testRoute } from "./routes/test/test";
 import { nonTestRoute } from "./routes/test/nonTest";
 import { addCompetitorRoute } from "./routes/company/add-competitor";
 import { addInventoryRoute } from "./routes/company/add-inventory";
+import { listInventoryRoute } from "./routes/company/list-inventory";
+import { listCompetitorsRoute } from "./routes/company/list-competitors";
 
 const fastify = Fastify({
   loggerInstance: logger,
@@ -27,6 +29,8 @@ fastify.register(testRoute);
 fastify.register(nonTestRoute);
 fastify.register(addCompetitorRoute);
 fastify.register(addInventoryRoute);
+fastify.register(listInventoryRoute);
+fastify.register(listCompetitorsRoute);
 
 const start = async () => {
   try {

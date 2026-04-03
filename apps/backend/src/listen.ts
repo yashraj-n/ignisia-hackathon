@@ -1,56 +1,34 @@
 import amqp from "amqplib";
 import type { EmailEvent } from "common";
-import { parseEmail } from "./agent/parser";
+import { processEmail } from "./agent";
 
 async function startConsumer() {
-  const connection = await amqp.connect(process.env.RABBITMQ_URL || "amqp://localhost");
-  const channel = await connection.createChannel();
+    const connection = await amqp.connect(process.env.RABBITMQ_URL || "amqp://localhost");
+    const channel = await connection.createChannel();
 
-  const queue = "EMAIL";
+    await channel.assertQueue("EMAIL", { durable: true });
+    console.log("[consumer] Waiting for emails on queue 'EMAIL'...");
 
-  await channel.assertQueue(queue, {
-    durable: true,
-  });
+    channel.consume("EMAIL", async (msg) => {
+        if (!msg) return;
 
-  console.log("Waiting for Cloudflare emails on queue 'EMAIL'...");
-
-  channel.consume(queue, async (msg) => {
-    if (msg) {
-      const content = msg.content.toString();
-      try {
-        const data = JSON.parse(content) as EmailEvent;
+        const data = JSON.parse(msg.content.toString()) as EmailEvent;
         channel.ack(msg);
 
-        console.log("\n╔══════════════════════════════════════════════╗");
-        console.log("║            📨  NEW EMAIL RECEIVED            ║");
-        console.log("╠══════════════════════════════════════════════╣");
-        console.log(`║  From:         ${data.from}`);
-        console.log(`║  Attachments:  ${data.attachmentsUrl?.length ?? 0} file(s)`);
-        data.attachmentsUrl?.forEach((url, i) => {
-          const name = url.split("/").pop() ?? url;
-          console.log(`║    ${i + 1}. ${name}`);
-        });
-        console.log(`║  Body preview: ${(data.text || data.html || "").slice(0, 80).replace(/\n/g, " ")}...`);
-        console.log("╠══════════════════════════════════════════════╣");
-        console.log("║  ⏳ Parsing with LLM...                      ║");
-        console.log("╚══════════════════════════════════════════════╝\n");
+        console.log(`[email] from=${data.from} attachments=${data.attachmentsUrl?.length ?? 0}`);
 
-        const result = await parseEmail(data);
+        try {
+            const result = await processEmail(data);
+            console.log("[done] parsed + inventory + competitor complete");
+            console.log("[parsed]", result.parsed.parsedContent.slice(0, 200) + "...");
+            console.log("[missing]", result.parsed.missingFields);
 
-        console.log("\n╔══════════════════════════════════════════════╗");
-        console.log("║            ✅  PARSE RESULT                  ║");
-        console.log("╠══════════════════════════════════════════════╣");
-        console.log("║  Parsed Content:");
-        console.log(result.structuredResponse.parsedContent);
-        console.log("╠══════════════════════════════════════════════╣");
-        console.log(`║  Missing Fields (${result.structuredResponse.missingFields.length}):`);
-        result.structuredResponse.missingFields.forEach((f: string) => console.log(`║    ⚠  ${f}`));
-        console.log("╚══════════════════════════════════════════════╝\n");
-      } catch (e) {
-        console.error("❌ Failed to process email:", e);
-      }
-    }
-  });
+            console.log("[inventory]", result.inventory.messages);
+            console.log("[competitor]", result.competitor);
+        } catch (e) {
+            console.error("[error]", e);
+        }
+    });
 }
 
 startConsumer();
