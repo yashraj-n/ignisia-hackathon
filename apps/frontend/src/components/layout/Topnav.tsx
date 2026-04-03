@@ -3,11 +3,14 @@ import { Search, Bell, Settings, User, LogOut, Shield } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Input } from '../ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from '@tanstack/react-router';
+import { Link, useRouter } from '@tanstack/react-router';
 
 export default function Topnav() {
   const [isMeOpen, setIsMeOpen] = useState(false);
   const meRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  
+  const [profile, setProfile] = useState<{ name: string; login_email: string } | null>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -18,6 +21,33 @@ export default function Topnav() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch('http://localhost:9000/api/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.company) setProfile(data.company);
+      })
+      .catch(err => console.error(err));
+    }
+  }, []);
+
+  const getInitials = (name: string) => {
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('token');
+    router.navigate({ to: '/auth' });
+  };
+
+  const name = profile?.name || 'Loading...';
+  const email = profile?.login_email || '';
+  const initials = profile?.name ? getInitials(profile.name) : '..';
 
   return (
     <header className="h-16 border-b border-white/10 glass-panel flex items-center justify-between px-6 shrink-0 z-10 sticky top-0">
@@ -62,7 +92,7 @@ export default function Topnav() {
             className="flex items-center outline-none ring-0 focus:ring-0"
           >
             <Avatar className="h-9 w-9 border border-white/10 hover:border-[#D4AF37]/50 hover:shadow-[0_0_15px_rgba(212,175,55,0.2)] transition-all cursor-pointer bg-[#1A1A1A]">
-              <AvatarFallback className="bg-transparent text-[#D4AF37] font-semibold text-sm">JD</AvatarFallback>
+              <AvatarFallback className="bg-transparent text-[#D4AF37] font-semibold text-sm">{initials}</AvatarFallback>
             </Avatar>
           </button>
 
@@ -78,11 +108,11 @@ export default function Topnav() {
                 <div className="p-4 border-b border-white/5 bg-[#121212]/95 backdrop-blur-md">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10 border border-[#D4AF37]/30 shadow-[0_0_10px_rgba(212,175,55,0.1)] bg-[#1A1A1A]">
-                      <AvatarFallback className="bg-transparent text-[#D4AF37] font-bold">JD</AvatarFallback>
+                      <AvatarFallback className="bg-transparent text-[#D4AF37] font-bold">{initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-white font-medium text-sm truncate">John Doe</span>
-                      <span className="text-muted-foreground text-xs truncate">john@bidforge.com</span>
+                      <span className="text-white font-medium text-sm truncate">{name}</span>
+                      <span className="text-muted-foreground text-xs truncate">{email}</span>
                     </div>
                   </div>
                 </div>
@@ -95,17 +125,13 @@ export default function Topnav() {
                   >
                     <User className="w-4 h-4" /> My Profile
                   </Link>
-                  <Link 
-                    to="/admin-settings"
-                    onClick={() => setIsMeOpen(false)}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-white hover:bg-white/5 rounded-md transition-colors"
-                  >
-                    <Shield className="w-4 h-4" /> Admin Settings
-                  </Link>
                 </div>
                 
                 <div className="p-2 border-t border-white/5 bg-[#0A0A0A]/95">
-                  <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[#EF4444] hover:bg-[#EF4444]/10 rounded-md transition-colors">
+                  <button 
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[#EF4444] hover:bg-[#EF4444]/10 rounded-md transition-colors"
+                  >
                     <LogOut className="w-4 h-4" /> Sign Out
                   </button>
                 </div>

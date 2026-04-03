@@ -5,6 +5,7 @@ import { Mail } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { useRouter } from "@tanstack/react-router";
 
 interface AuthFormProps {
   onFocusChange: (isFocused: boolean) => void;
@@ -34,6 +35,33 @@ export function SignInForm({
     onShowPasswordChange(nextValue);
   };
 
+  const router = useRouter();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const emailInput = (document.getElementById("email") as HTMLInputElement).value;
+      const res = await fetch("http://localhost:9000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          login_email: emailInput,
+          login_password: password
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("token", data.token);
+        router.navigate({ to: "/profile" });
+      } else {
+        const err = await res.json();
+        alert(err.message || "Failed to login");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="w-full max-w-[420px] transition-all duration-500 animate-in fade-in slide-in-from-left-4">
       <div className="text-center mb-10">
@@ -41,7 +69,7 @@ export function SignInForm({
         <p className="text-muted-foreground text-sm">Please enter your details</p>
       </div>
 
-      <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+      <form className="space-y-5" onSubmit={handleLogin}>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input 
@@ -130,6 +158,36 @@ export function SignUpForm({
     onShowPasswordChange(nextValue);
   };
 
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) return;
+    try {
+      const companyName = (document.getElementById("companyName") as HTMLInputElement).value;
+      const email = (document.getElementById("signup-email") as HTMLInputElement).value;
+      const sizeStr = (document.getElementById("size") as HTMLInputElement).value;
+      
+      const res = await fetch("http://localhost:9000/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: companyName, // Mapping company name, since schema doesn't have userName
+          login_email: email,
+          login_password: password,
+          size: parseInt(sizeStr, 10) || 1
+        })
+      });
+      if (res.ok) {
+        alert("Verification email sent. Please check your inbox before logging in.");
+        onToggle(); // switch to login form
+      } else {
+        const err = await res.json();
+        alert(err.message || "Failed to create account");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="w-full max-w-[420px] transition-all duration-500 animate-in fade-in slide-in-from-right-4">
       <div className="text-center mb-6">
@@ -137,28 +195,16 @@ export function SignUpForm({
         <p className="text-muted-foreground text-sm">Join BidForge today</p>
       </div>
 
-      <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="userName">User Name</Label>
-            <Input 
-              id="userName" 
-              placeholder="John Doe" 
-              onFocus={() => onFocusChange(true)}
-              onBlur={() => onFocusChange(false)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="companyName">Company Name</Label>
-            <Input 
-              id="companyName" 
-              placeholder="Acme Corp" 
-              onFocus={() => onFocusChange(true)}
-              onBlur={() => onFocusChange(false)}
-              required
-            />
-          </div>
+      <form className="space-y-3" onSubmit={handleSignup}>
+        <div className="space-y-2">
+          <Label htmlFor="companyName">Company Name</Label>
+          <Input 
+            id="companyName" 
+            placeholder="Acme Corp" 
+            onFocus={() => onFocusChange(true)}
+            onBlur={() => onFocusChange(false)}
+            required
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">

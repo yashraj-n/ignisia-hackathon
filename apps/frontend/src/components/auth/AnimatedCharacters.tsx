@@ -251,12 +251,6 @@ export const AnimatedCharacters = ({
         </div>
       </div>
 
-      <div className="relative z-20 flex items-center gap-8 text-sm text-primary-foreground/60">
-        <a href="#" className="hover:text-primary-foreground transition-colors">Privacy Policy</a>
-        <a href="#" className="hover:text-primary-foreground transition-colors">Terms of Service</a>
-        <a href="#" className="hover:text-primary-foreground transition-colors">Contact</a>
-      </div>
-
       <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
       <div className="absolute top-1/4 right-1/4 size-64 bg-primary-foreground/10 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 left-1/4 size-96 bg-primary-foreground/5 rounded-full blur-3xl" />
