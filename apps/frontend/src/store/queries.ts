@@ -92,3 +92,38 @@ export const rfpQueries = {
       enabled: !!id,
     }),
 };
+
+import type { InventoryItem, CompetitorItem } from '../lib/types';
+
+const API_BASE = 'http://localhost:9000';
+
+function getAuthHeaders() {
+  const token = localStorage.getItem('token');
+  return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+}
+
+export const inventoryQueries = {
+  list: () =>
+    queryOptions({
+      queryKey: ['inventory'],
+      queryFn: async (): Promise<InventoryItem[]> => {
+        const res = await fetch(`${API_BASE}/api/company/inventory`, {
+          headers: getAuthHeaders(),
+        });
+        const data = await res.json();
+        return data.items ?? [];
+      },
+    }),
+  competitors: () =>
+    queryOptions({
+      queryKey: ['competitors'],
+      queryFn: async (): Promise<CompetitorItem[]> => {
+        const res = await fetch(`${API_BASE}/api/company/competitors`, {
+          headers: getAuthHeaders(),
+        });
+        const data = await res.json();
+        return data.competitors ?? [];
+      },
+    }),
+};
+

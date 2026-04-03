@@ -1,10 +1,11 @@
-import { LayoutDashboard, BarChart3, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Settings, ChevronLeft, ChevronRight, Package } from 'lucide-react';
 import { Link, useLocation } from '@tanstack/react-router';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const menuItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+  { name: 'Inventory', icon: Package, path: '/inventory' },
   { name: 'Analytics', icon: BarChart3, path: '/analytics' },
   { name: 'Settings', icon: Settings, path: '/settings' },
 ];

@@ -23,3 +23,23 @@ export interface RFPStats {
   pending: number;
   pendingChange: number;
 }
+
+export interface InventoryItem {
+  id: string;
+  companyId: string;
+  name: string;
+  s3_url: string;
+  information: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompetitorItem {
+  id: string;
+  companyId: string;
+  name: string;
+  s3_url: string;
+  information: string;
+  createdAt: string;
+  updatedAt: string;
+}
