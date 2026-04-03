@@ -1,28 +1,28 @@
 import { createAgent, HumanMessage, SystemMessage } from "langchain";
 import type { RFPParserResponse } from "./parser";
 import { flashLlm } from "./llm";
-import { INVENTORY_STATS_PROMPT } from "./prompts";
+import { COMPETITOR_PRICING_PROMPT } from "./prompts";
 import { db } from "../db";
 import { readS3File, type ContentPart } from "./s3";
 
-export async function generateInventoryStats(parsed: RFPParserResponse, companyId: string) {
+export async function generateCompetitorPricing(parsed: RFPParserResponse, companyId: string) {
     const agent = createAgent({ model: flashLlm });
 
-    const inventoryItems = await db.inventory.findMany({ where: { companyId } });
+    const competitors = await db.competitor.findMany({ where: { companyId } });
 
-    const fileParts = await Promise.all(inventoryItems.map((item) => readS3File(item.s3_url)));
+    const fileParts = await Promise.all(competitors.map((c) => readS3File(c.s3_url)));
 
     const content: ContentPart[] = [
         {
             type: "text",
-            text: `RFP Requirements:\n${parsed.parsedContent}\n\nInventory files (${inventoryItems.length} file(s)):\n`,
+            text: `RFP Requirements:\n${parsed.parsedContent}\n\nCompetitor files (${competitors.length} file(s)):\n`,
         },
         ...fileParts,
     ];
 
     return await agent.invoke({
         messages: [
-            new SystemMessage(INVENTORY_STATS_PROMPT),
+            new SystemMessage(COMPETITOR_PRICING_PROMPT),
             new HumanMessage({ content }),
         ],
     });
