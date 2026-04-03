@@ -66,7 +66,7 @@ export default function Topnav() {
         </Link>
       </div>
 
-      <div className="flex-1 max-w-md px-8 relative">
+      {/* <div className="flex-1 max-w-md px-8 relative">
         <div className="relative group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-[#D4AF37] transition-colors" />
           <Input 
@@ -74,13 +74,13 @@ export default function Topnav() {
             className="w-full bg-[#1A1A1A]/50 border-white/10 pl-9 focus-visible:ring-[#D4AF37]/50 rounded-full text-sm"
           />
         </div>
-      </div>
+      </div> */}
 
       <div className="flex items-center gap-4">
-        <button className="p-2 text-muted-foreground hover:text-white transition-colors relative hover-glow rounded-full">
+        {/* <button className="p-2 text-muted-foreground hover:text-white transition-colors relative hover-glow rounded-full">
           <Bell className="w-5 h-5" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#D4AF37] rounded-full shadow-[0_0_8px_#D4AF37]"></span>
-        </button>
+        </button> */}
         <button className="p-2 text-muted-foreground hover:text-white transition-colors hover-glow rounded-full">
           <Settings className="w-5 h-5" />
         </button>

@@ -1,7 +1,7 @@
 info:
-  name: Post Signup
+  name: Add Inventory
   type: http
-  seq: 3
+  seq: 4
 
 http:
   method: POST
@@ -15,9 +15,7 @@ http:
         "mimeType":"text/csv",
         "extension":"csv"
       }
-  auth:
-    type: bearer
-    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55SWQiOiI2OWNmODM4ZTc1NWI2YTU0NzNjOTRmMGQiLCJlbWFpbCI6ImFzaGlzaDk5MjAwNUBnbWFpbC5jb20iLCJpYXQiOjE3NzUyMTQzMDgsImV4cCI6MTc3NTgxOTEwOH0.uF5ZYf42Yt22Qhw3HTcEvGwso_AkGoD42aChnk5W0jA
+  auth: inherit
 
 settings:
   encodeUrl: true
