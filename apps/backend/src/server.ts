@@ -10,6 +10,7 @@ import { loginRoute } from "./routes/auth/login";
 import { testRoute } from "./routes/test/test";
 import { nonTestRoute } from "./routes/test/nonTest";
 import { addCompetitorRoute } from "./routes/company/add-competitor";
+import { addInventoryRoute } from "./routes/company/add-inventory";
 
 const fastify = Fastify({
   loggerInstance: logger,
@@ -23,6 +24,7 @@ fastify.register(loginRoute);
 fastify.register(testRoute);
 fastify.register(nonTestRoute);
 fastify.register(addCompetitorRoute);
+fastify.register(addInventoryRoute);
 
 const start = async () => {
   try {
