@@ -6,7 +6,7 @@ async function startConsumer() {
   const connection = await amqp.connect(process.env.RABBITMQ_URL || "amqp://localhost");
   const channel = await connection.createChannel();
 
-  const queue = "EMAIL";
+  const queue = "EMAIL1";
 
   await channel.assertQueue(queue, {
     durable: true,
@@ -49,7 +49,6 @@ async function startConsumer() {
       } catch(e) {
         console.error("❌ Failed to process email:", e);
       }
-
     }
   });
 }

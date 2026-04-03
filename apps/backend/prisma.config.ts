@@ -7,7 +7,7 @@ import { dirname, resolve } from "node:path";
 import { defineConfig, env } from "prisma/config";
 
 dotenvConfig({
-  path: resolve(dirname(fileURLToPath(import.meta.url)), "../../.env"),
+  path: resolve(dirname(fileURLToPath(import.meta.url)), "./.env"),
 });
 
 export default defineConfig({
