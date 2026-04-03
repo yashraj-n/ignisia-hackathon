@@ -1,9 +1,8 @@
 {
-  "name": "app",
+  "name": "common",
+  "module": "index.ts",
+  "type": "module",
   "private": true,
-  "workspaces": [
-    "apps/*"
-  ],
   "devDependencies": {
     "@types/bun": "latest"
   },
@@ -11,5 +10,6 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "zod": "^4.3.6"
   }
 }
