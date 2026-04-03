@@ -4,6 +4,7 @@ import { onError } from "@orpc/server";
 import { router } from "./orpc";
 import { LoggingHandlerPlugin } from "@orpc/experimental-pino";
 import { logger } from "./utils/logger";
+import { db } from "./db";
 
 const handler = new RPCHandler(router, {
   plugins: [
@@ -25,6 +26,7 @@ Bun.serve({
       prefix: "/rpc",
       context: {
         logger,
+        db,
       },
     });
 
@@ -34,7 +36,7 @@ Bun.serve({
 
     return new Response("Not found", { status: 404 });
   },
-  port: 3000,
+  port: 9000,
   error(error) {
     console.error(error);
   },
