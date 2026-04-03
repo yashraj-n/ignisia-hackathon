@@ -7,7 +7,6 @@ const menuItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   { name: 'Inventory', icon: Package, path: '/inventory' },
   { name: 'Analytics', icon: BarChart3, path: '/analytics' },
-  { name: 'Settings', icon: Settings, path: '/settings' },
 ];
 
 export default function Sidebar({ 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Settings, User, LogOut } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useRouter } from '@tanstack/react-router';
@@ -68,10 +68,6 @@ export default function Topnav() {
       <div className="flex-1"></div>
 
       <div className="flex items-center gap-4">
-        <button className="p-2 text-muted-foreground hover:text-white transition-colors rounded-full hover:bg-white/5">
-          <Settings className="w-5 h-5" />
-        </button>
-        <div className="h-8 w-px bg-white/[0.08] mx-2"></div>
 
         <div className="relative z-50" ref={meRef}>
           <button
