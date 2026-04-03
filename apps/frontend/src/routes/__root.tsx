@@ -47,6 +47,16 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
     links: [
       {
+        rel: 'icon',
+        type: 'image/png',
+        href: '/bidforge-icon.png?v=3',
+      },
+      {
+        rel: 'shortcut icon',
+        type: 'image/png',
+        href: '/bidforge-icon.png?v=3',
+      },
+      {
         rel: 'stylesheet',
         href: appCss,
       },
