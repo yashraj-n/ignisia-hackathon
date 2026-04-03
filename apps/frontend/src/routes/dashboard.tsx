@@ -5,13 +5,32 @@ import { motion } from 'framer-motion'
 import { FileStack, CheckCircle, XCircle, Clock, Plus, Package, FileText, Edit, Loader2 } from 'lucide-react'
 import { cn } from '../lib/utils'
 
-import { rfpQueries } from '../store/queries'
-import type { RFP } from '../lib/types'
+import { rfpQueries, computeRFPStats } from '../store/queries'
+import type { RFPItem } from '../lib/types'
 
 import UploadModal from '../components/dashboard/UploadModal'
-import RFPDetailsPanel from '../components/dashboard/RFPDetailsPanel'
 import AppLayout from '../layout/AppLayout'
 import { BGPattern } from '../components/ui/bg-pattern'
+
+const statusLabelMap: Record<string, string> = {
+  parsed: 'Awaiting Review',
+  exploring: 'Exploring',
+  explored: 'Explored',
+  summarising: 'Summarising',
+  summarised: 'Summarised',
+  generating_document: 'Generating',
+  completed: 'Completed',
+  parse_rejected: 'Rejected (Parse)',
+  explore_rejected: 'Rejected (Explore)',
+  summarise_rejected: 'Rejected (Summarise)',
+  failed: 'Failed',
+  processing: 'Processing',
+};
+
+function truncateInfo(info: string, max = 40): string {
+  const firstLine = info.split('\n')[0] ?? '';
+  return firstLine.length > max ? firstLine.slice(0, max - 1) + '…' : firstLine;
+}
 
 const BarChart = () => {
     const data = [
@@ -85,6 +104,8 @@ const BentoItem = ({ className, children }: { className?: string, children: Reac
     );
 };
 
+const PROCESSING_STATUSES = ['exploring', 'summarising', 'generating_document'];
+
 export const CyberneticBentoGrid = ({ stats, rfps, isLoading, onNewBid, onSelectRFP, onEditInventory }: any) => {
     return (
         <div className="w-full z-10 max-w-7xl mx-auto mt-4">
@@ -115,11 +136,11 @@ export const CyberneticBentoGrid = ({ stats, rfps, isLoading, onNewBid, onSelect
 
                 <BentoItem>
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold text-white">Accepted</h2>
+                        <h2 className="text-xl font-bold text-white">Completed</h2>
                         <CheckCircle className="w-6 h-6 text-green-400" />
                     </div>
-                    <div className="text-5xl font-bold text-white mt-auto">{isLoading ? '-' : stats?.accepted || 0}</div>
-                    <p className="text-sm text-gray-500 mt-2">Won proposals</p>
+                    <div className="text-5xl font-bold text-white mt-auto">{isLoading ? '-' : stats?.completed || 0}</div>
+                    <p className="text-sm text-gray-500 mt-2">Finished proposals</p>
                 </BentoItem>
 
                 <BentoItem>
@@ -143,17 +164,17 @@ export const CyberneticBentoGrid = ({ stats, rfps, isLoading, onNewBid, onSelect
                 {/* Ingestion Pipeline Block - left half */}
                 <BentoItem className="col-span-1 md:col-span-2 row-span-2 overflow-y-auto">
                     <div className="flex items-center gap-3 mb-6">
-                        <Loader2 className={cn("w-8 h-8", rfps?.some((r: RFP) => r.status === 'Processing') ? "text-[#D4AF37] animate-spin" : "text-gray-500")} />
+                        <Loader2 className={cn("w-8 h-8", rfps?.some((r: RFPItem) => PROCESSING_STATUSES.includes(r.status)) ? "text-[#D4AF37] animate-spin" : "text-gray-500")} />
                         <h2 className="text-2xl font-bold text-white">Ingestion Pipeline</h2>
                     </div>
                     <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-xl bg-black/20 p-6 text-center">
-                        {rfps?.some((r: RFP) => r.status === 'Processing') ? (
+                        {rfps?.some((r: RFPItem) => PROCESSING_STATUSES.includes(r.status)) ? (
                             <div className="space-y-4 w-full">
-                                {rfps.filter((r: RFP) => r.status === 'Processing').map((rfp: RFP) => (
+                                {rfps.filter((r: RFPItem) => PROCESSING_STATUSES.includes(r.status)).map((rfp: RFPItem) => (
                                     <div key={rfp.id} className="flex flex-col gap-2 p-4 bg-black/40 border border-[#D4AF37]/30 rounded-lg text-left">
                                         <div className="flex justify-between items-center">
-                                            <span className="font-semibold text-white truncate">{rfp.title}</span>
-                                            <span className="text-[10px] bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase tracking-widest">Processing</span>
+                                            <span className="font-semibold text-white truncate">{truncateInfo(rfp.information)}</span>
+                                            <span className="text-[10px] bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded font-bold uppercase tracking-widest">{statusLabelMap[rfp.status] ?? rfp.status}</span>
                                         </div>
                                         <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
                                             <motion.div 
@@ -206,22 +227,25 @@ export const CyberneticBentoGrid = ({ stats, rfps, isLoading, onNewBid, onSelect
                                 [...Array(2)].map((_, i) => (
                                     <div key={i} className="bg-black/30 border border-white/5 rounded-xl h-[160px] animate-pulse" />
                                 ))
-                           ) : rfps?.slice(0, 2).map((rfp: RFP) => (
-                               <div 
-                                    key={rfp.id} 
-                                    onClick={() => onSelectRFP(rfp)}
-                                    className="bg-black/40 border border-white/5 hover:border-[#D4AF37]/50 cursor-pointer rounded-xl p-5 flex flex-col justify-between transition-colors"
-                               >
-                                   <div>
-                                     <div className="font-semibold text-white truncate text-lg mb-1">{rfp.title}</div>
-                                     <div className="text-sm text-gray-400 line-clamp-2">{rfp.companyName}</div>
-                                   </div>
-                                   <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-                                     <span className="text-xs uppercase tracking-wider text-gray-500 font-medium">{rfp.status}</span>
-                                     <span className="text-xs text-gray-600">{rfp.arrivalDate}</span>
-                                   </div>
-                                </div>
-                           ))}
+                           ) : rfps?.slice(0, 2).map((rfp: RFPItem) => {
+                                const dateStr = new Date(rfp.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                                return (
+                                    <div 
+                                        key={rfp.id} 
+                                        onClick={() => onSelectRFP(rfp)}
+                                        className="bg-black/40 border border-white/5 hover:border-[#D4AF37]/50 cursor-pointer rounded-xl p-5 flex flex-col justify-between transition-colors"
+                                    >
+                                       <div>
+                                         <div className="font-semibold text-white truncate text-lg mb-1">{truncateInfo(rfp.information, 50)}</div>
+                                         <div className="text-sm text-gray-400 line-clamp-2">{rfp.source_email ?? "Unknown source"}</div>
+                                       </div>
+                                       <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                                         <span className="text-xs uppercase tracking-wider text-gray-500 font-medium">{statusLabelMap[rfp.status] ?? rfp.status}</span>
+                                         <span className="text-xs text-gray-600">{dateStr}</span>
+                                       </div>
+                                    </div>
+                                );
+                           })}
                            {(!isLoading && (!rfps || rfps.length === 0)) && (
                                 <div className="text-gray-500 col-span-2 h-full flex items-center justify-center border border-dashed border-white/10 rounded-xl py-12">No RFPs found</div>
                            )}
@@ -240,12 +264,11 @@ export const Route = createFileRoute('/dashboard')({
 function DashboardComponent() {
   const navigate = useNavigate()
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
-  const [selectedRFP, setSelectedRFP] = useState<RFP | null>(null)
 
-  const { data: stats, isLoading: isStatsLoading } = useQuery(rfpQueries.stats())
   const { data: rfps = [], isLoading: isRFPsLoading } = useQuery(rfpQueries.list())
 
-  const isLoading = isStatsLoading || isRFPsLoading;
+  const stats = computeRFPStats(rfps)
+  const isLoading = isRFPsLoading;
 
   return (
     <AppLayout>
@@ -260,7 +283,7 @@ function DashboardComponent() {
             isLoading={isLoading} 
             onNewBid={() => setIsUploadModalOpen(true)}
             onEditInventory={() => navigate({ to: '/inventory' })}
-            onSelectRFP={setSelectedRFP}
+            onSelectRFP={(rfp: RFPItem) => navigate({ to: '/rfp/$id', params: { id: rfp.id } })}
           />
 
         </div>
@@ -268,11 +291,6 @@ function DashboardComponent() {
         <UploadModal 
           isOpen={isUploadModalOpen} 
           onClose={() => setIsUploadModalOpen(false)} 
-        />
-
-        <RFPDetailsPanel 
-          rfp={selectedRFP} 
-          onClose={() => setSelectedRFP(null)} 
         />
       </div>
     </AppLayout>

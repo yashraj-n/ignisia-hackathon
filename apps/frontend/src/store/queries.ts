@@ -1,99 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
-import type { RFP, RFPStats } from '../lib/types';
-
-const mockStats: RFPStats = {
-  total: 142,
-  totalChange: 12.5,
-  accepted: 84,
-  acceptedChange: 8.2,
-  rejected: 23,
-  rejectedChange: -2.4,
-  pending: 35,
-  pendingChange: 15.3,
-};
-
-const mockRFPs: RFP[] = [
-  {
-    id: 'rfp-1',
-    title: 'Enterprise Cloud Migration',
-    companyName: 'Acme Corp',
-    arrivalDate: '2023-10-24',
-    arrivalTime: '09:30 AM',
-    status: 'Processing',
-    scopeOfWork: 'Migrate on-premise infrastructure to AWS.',
-    infrastructureDetected: ['AWS EC2', 'S3', 'RDS'],
-    assetsDetected: ['Web Servers', 'Database'],
-    missingFields: ['SLA Response Time', 'Budget Cap'],
-  },
-  {
-    id: 'rfp-2',
-    title: 'Cybersecurity Audit & SOC Setup',
-    companyName: 'Global Tech',
-    arrivalDate: '2023-10-23',
-    arrivalTime: '11:15 AM',
-    status: 'Pending',
-    scopeOfWork: 'Complete security audit and 24/7 SOC establishment.',
-    infrastructureDetected: ['Azure Sentinel', 'Fortinet Firewalls'],
-    assetsDetected: ['Endpoints', 'Network Devices'],
-    missingFields: [],
-  },
-  {
-    id: 'rfp-3',
-    title: 'Managed IT Services',
-    companyName: 'Retail Giant',
-    arrivalDate: '2023-10-22',
-    arrivalTime: '02:45 PM',
-    status: 'Accepted',
-    scopeOfWork: 'End-to-end IT support for 150 retail locations.',
-    infrastructureDetected: ['Meraki', 'Windows Server'],
-    assetsDetected: ['POS Terminals', 'Office PCs'],
-    missingFields: [],
-  },
-  {
-    id: 'rfp-4',
-    title: 'Data Center Decommission',
-    companyName: 'Old Bank Inc',
-    arrivalDate: '2023-10-21',
-    arrivalTime: '04:00 PM',
-    status: 'Rejected',
-    scopeOfWork: 'Securely wipe and decommission legacy data center gear.',
-    infrastructureDetected: ['Legacy Mainframe', 'SAN Storage'],
-    assetsDetected: ['Hard Drives', 'Servers'],
-    missingFields: ['Disposal Certification Requirements'],
-  },
-];
-
-export const rfpQueries = {
-  stats: () =>
-    queryOptions({
-      queryKey: ['rfp-stats'],
-      queryFn: async () => {
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        return mockStats;
-      },
-    }),
-  list: () =>
-    queryOptions({
-      queryKey: ['rfps'],
-      queryFn: async () => {
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        return mockRFPs;
-      },
-    }),
-  detail: (id: string) =>
-    queryOptions({
-      queryKey: ['rfps', id],
-      queryFn: async () => {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        return mockRFPs.find((r) => r.id === id) || null;
-      },
-      enabled: !!id,
-    }),
-};
-
-import type { InventoryItem, CompetitorItem } from '../lib/types';
+import type { RFPItem, RFPStats, InventoryItem, CompetitorItem } from '../lib/types';
 
 const API_BASE = 'http://localhost:9000';
 
@@ -101,6 +7,121 @@ function getAuthHeaders() {
   const token = localStorage.getItem('token');
   return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 }
+
+export function computeRFPStats(rfps: RFPItem[]): RFPStats {
+  const rejectedStatuses = ['parse_rejected', 'explore_rejected', 'summarise_rejected', 'failed'];
+  const pendingStatuses = ['parsed', 'exploring', 'explored', 'summarising', 'summarised', 'generating_document'];
+
+  return {
+    total: rfps.length,
+    totalChange: 0,
+    completed: rfps.filter((r) => r.status === 'completed').length,
+    completedChange: 0,
+    rejected: rfps.filter((r) => rejectedStatuses.includes(r.status)).length,
+    rejectedChange: 0,
+    pending: rfps.filter((r) => pendingStatuses.includes(r.status)).length,
+    pendingChange: 0,
+  };
+}
+
+async function fetchRFPList(): Promise<RFPItem[]> {
+  const res = await fetch(`${API_BASE}/api/rfp`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to fetch RFPs');
+  }
+  const data = await res.json();
+  return data.rfps ?? [];
+}
+
+export const rfpQueries = {
+  list: () =>
+    queryOptions({
+      queryKey: ['rfps'],
+      queryFn: fetchRFPList,
+    }),
+  stats: () =>
+    queryOptions({
+      queryKey: ['rfps'],
+      queryFn: fetchRFPList,
+      select: (rfps: RFPItem[]): RFPStats => computeRFPStats(rfps),
+    }),
+  detail: (id: string) =>
+    queryOptions({
+      queryKey: ['rfps', id],
+      queryFn: async (): Promise<RFPItem> => {
+        const res = await fetch(`${API_BASE}/api/rfp/${id}`, {
+          headers: getAuthHeaders(),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || 'Failed to fetch RFP');
+        }
+        const data = await res.json();
+        return data.rfp;
+      },
+      enabled: !!id,
+    }),
+};
+
+export async function exploreRfp(id: string): Promise<RFPItem> {
+  const res = await fetch(`${API_BASE}/api/rfp/${id}/explore`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({}),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Explore failed');
+  }
+  const data = await res.json();
+  return data.rfp;
+}
+
+export async function summariseRfp(id: string): Promise<RFPItem> {
+  const res = await fetch(`${API_BASE}/api/rfp/${id}/summarise`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({}),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Summarise failed');
+  }
+  const data = await res.json();
+  return data.rfp;
+}
+
+export async function generateDocument(id: string): Promise<{ rfp: RFPItem; documentUrl: string }> {
+  const res = await fetch(`${API_BASE}/api/rfp/${id}/generate-document`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({}),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Document generation failed');
+  }
+  const data = await res.json();
+  return { rfp: data.rfp, documentUrl: data.documentUrl };
+}
+
+export async function rejectRfp(id: string, reason: string): Promise<RFPItem> {
+  const res = await fetch(`${API_BASE}/api/rfp/${id}/reject`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ reason }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Rejection failed');
+  }
+  const data = await res.json();
+  return data.rfp;
+}
+
 
 export const inventoryQueries = {
   list: () =>
@@ -126,6 +147,7 @@ export const inventoryQueries = {
       },
     }),
 };
+
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -189,4 +211,3 @@ export async function uploadCompetitor(payload: UploadPayload): Promise<Competit
   const data = await res.json();
   return data.competitor;
 }
-

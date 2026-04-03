@@ -1,22 +1,35 @@
 import { useState } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
 import { clsx } from 'clsx';
-import type { RFP } from '../../lib/types';
+import type { RFPItem, RFPStatus } from '../../lib/types';
 import RFPCard from './RFPCard';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Badge } from '../ui/badge';
 
 interface RecentRFPsProps {
-  rfps: RFP[];
-  onSelectRFP: (rfp: RFP) => void;
+  rfps: RFPItem[];
+  onSelectRFP: (rfp: RFPItem) => void;
 }
 
-const statusConfig = {
-  Processing: "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20",
-  Accepted: "bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20",
-  Rejected: "bg-destructive/10 text-destructive border-destructive/20",
-  Pending: "bg-[#FACC15]/10 text-[#FACC15] border-[#FACC15]/20",
+const statusConfig: Record<RFPStatus, { label: string; className: string }> = {
+  parsed:              { label: "Awaiting Review",       className: "bg-[#FACC15]/10 text-[#FACC15] border-[#FACC15]/20" },
+  exploring:           { label: "Exploring",             className: "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20" },
+  explored:            { label: "Explored",              className: "bg-[#60A5FA]/10 text-[#60A5FA] border-[#60A5FA]/20" },
+  summarising:         { label: "Summarising",           className: "bg-[#A78BFA]/10 text-[#A78BFA] border-[#A78BFA]/20" },
+  summarised:          { label: "Summarised",            className: "bg-[#8B5CF6]/10 text-[#8B5CF6] border-[#8B5CF6]/20" },
+  generating_document: { label: "Generating",            className: "bg-[#F97316]/10 text-[#F97316] border-[#F97316]/20" },
+  completed:           { label: "Completed",             className: "bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20" },
+  parse_rejected:      { label: "Rejected (Parse)",      className: "bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/20" },
+  explore_rejected:    { label: "Rejected (Explore)",    className: "bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/20" },
+  summarise_rejected:  { label: "Rejected (Summarise)",  className: "bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/20" },
+  failed:              { label: "Failed",                className: "bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/20" },
+  processing:          { label: "Processing",            className: "bg-[#3B82F6]/10 text-[#3B82F6] border-[#3B82F6]/20" },
 };
+
+function truncateInfo(info: string, max = 50): string {
+  const firstLine = info.split('\n')[0] ?? '';
+  return firstLine.length > max ? firstLine.slice(0, max - 1) + '…' : firstLine;
+}
 
 export default function RecentRFPs({ rfps, onSelectRFP }: RecentRFPsProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
@@ -59,33 +72,37 @@ export default function RecentRFPs({ rfps, onSelectRFP }: RecentRFPsProps) {
             <TableHeader className="bg-[#1A1A1A]/50 border-b border-white/5 hover:bg-transparent">
               <TableRow className="border-none hover:bg-transparent">
                 <TableHead className="text-muted-foreground">RFP Name</TableHead>
-                <TableHead className="text-muted-foreground">Company</TableHead>
-                <TableHead className="text-muted-foreground">Arrival Time</TableHead>
+                <TableHead className="text-muted-foreground">Source</TableHead>
+                <TableHead className="text-muted-foreground">Date</TableHead>
                 <TableHead className="text-muted-foreground">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rfps.map((rfp) => (
-                <TableRow 
-                  key={rfp.id} 
-                  className="group border-b border-white/5 hover:bg-white/[0.02] cursor-pointer transition-colors relative"
-                  onClick={() => onSelectRFP(rfp)}
-                >
-                  <TableCell className="font-medium text-white relative">
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-primary group-hover:h-3/5 transition-all duration-300 rounded-r-full" />
-                    <span className="pl-4 block">{rfp.title}</span>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{rfp.companyName}</TableCell>
-                  <TableCell className="text-muted-foreground whitespace-nowrap">
-                    {rfp.arrivalDate} <span className="text-[10px] opacity-50 ml-1">{rfp.arrivalTime}</span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={clsx("font-bold text-[10px] uppercase tracking-wider", statusConfig[rfp.status])}>
-                      {rfp.status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {rfps.map((rfp) => {
+                const st = statusConfig[rfp.status];
+                const dateStr = new Date(rfp.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                return (
+                  <TableRow 
+                    key={rfp.id} 
+                    className="group border-b border-white/5 hover:bg-white/[0.02] cursor-pointer transition-colors relative"
+                    onClick={() => onSelectRFP(rfp)}
+                  >
+                    <TableCell className="font-medium text-white relative">
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-primary group-hover:h-3/5 transition-all duration-300 rounded-r-full" />
+                      <span className="pl-4 block">{truncateInfo(rfp.information)}</span>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{rfp.source_email ?? "—"}</TableCell>
+                    <TableCell className="text-muted-foreground whitespace-nowrap">
+                      {dateStr}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={clsx("font-bold text-[10px] uppercase tracking-wider", st.className)}>
+                        {st.label}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
