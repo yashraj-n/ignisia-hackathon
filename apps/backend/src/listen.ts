@@ -19,12 +19,12 @@ async function startConsumer() {
 
         try {
             const result = await processEmail(data);
-            console.log("[done] parsed + inventory + competitor complete");
-            console.log("[parsed]", result.parsed.parsedContent.slice(0, 200) + "...");
-            console.log("[missing]", result.parsed.missingFields);
+            // console.log("[done] parsed + inventory + competitor complete");
+            // console.log("[parsed]", result.parsed.parsedContent.slice(0, 200) + "...");
+            // console.log("[missing]", result.parsed.missingFields);
 
-            console.log("[inventory]", result.inventory.messages);
-            console.log("[competitor]", result.competitor);
+            // console.log("[inventory]", result.inventory.messages);
+            // console.log("[competitor]", result.competitor);
         } catch (e) {
             console.error("[error]", e);
         }
