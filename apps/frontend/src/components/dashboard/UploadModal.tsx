@@ -85,11 +85,16 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.98, y: 10 }}
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98, y: 10 }}
-            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            className="relative w-full max-w-lg glass-panel rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+            exit={{ opacity: 0, scale: 0.96, y: 10 }}
+            transition={{ 
+              type: "spring",
+              stiffness: 400,
+              damping: 30,
+              mass: 0.8
+            }}
+            className="relative w-full max-w-lg glass-panel rounded-2xl overflow-hidden shadow-[0_0_50px_-12px_rgba(212,175,55,0.15)] border border-white/10"
           >
             <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#121212]/95 backdrop-blur-md">
               <h2 className="text-xl font-bold text-white tracking-tight">Upload RFP Document</h2>
@@ -109,7 +114,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
                   className={clsx(
                     "border-2 border-dashed rounded-2xl p-12 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-500 relative overflow-hidden group",
                     isDragActive 
-                      ? "border-[#D4AF37] bg-[#D4AF37]/5 shadow-[inset_0_0_20px_rgba(212,175,55,0.1)]" 
+                      ? "border-[#D4AF37] bg-[#D4AF37]/5 shadow-[inset_0_0_30px_rgba(212,175,55,0.15)]" 
                       : "border-white/10 hover:border-[#D4AF37]/40 hover:bg-white/5"
                   )}
                 >
@@ -123,18 +128,30 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
                     />
                   )}
 
-                  <div className="w-16 h-16 rounded-full bg-[#1A1A1A] border border-white/5 flex items-center justify-center mb-6 shadow-xl group-hover:scale-110 group-hover:border-[#D4AF37]/30 transition-all duration-300">
+                  <motion.div 
+                    animate={isDragActive ? { 
+                      y: [0, -8, 0],
+                      scale: 1.1,
+                      boxShadow: "0 15px 30px rgba(212,175,55,0.2)"
+                    } : {}}
+                    transition={{ 
+                      repeat: Infinity, 
+                      duration: 1.2, 
+                      ease: "easeInOut" 
+                    }}
+                    className="w-16 h-16 rounded-full bg-[#1A1A1A] border border-white/5 flex items-center justify-center mb-6 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] group-hover:border-[#D4AF37]/40 transition-all duration-300 relative z-10"
+                  >
                     <FileUp className={clsx("w-8 h-8 transition-colors duration-300", isDragActive ? "text-[#D4AF37]" : "text-muted-foreground group-hover:text-white")} />
-                  </div>
+                  </motion.div>
                   
-                  <h3 className="text-lg font-semibold text-white mb-2">
+                  <h3 className={clsx("text-lg font-semibold mb-2 transition-colors duration-300", isDragActive ? "text-[#D4AF37]" : "text-white")}>
                     {isDragActive ? "Release to process" : "Drop RFP file here"}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-6 max-w-[200px] mx-auto">
                     Securely upload PDF or DOCX files for AI analysis
                   </p>
                   
-                  <div className="flex gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
+                  <div className="flex gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 relative z-10">
                     <span className="bg-white/5 px-2 py-1 rounded border border-white/5 transition-colors group-hover:border-white/10">PDF</span>
                     <span className="bg-white/5 px-2 py-1 rounded border border-white/5 transition-colors group-hover:border-white/10">DOCX</span>
                   </div>

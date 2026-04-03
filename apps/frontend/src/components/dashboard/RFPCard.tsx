@@ -22,13 +22,23 @@ export default function RFPCard({ rfp, onClick }: RFPCardProps) {
   return (
     <motion.div
       whileHover={{ 
-        y: -2,
-        boxShadow: "0 10px 30px -15px rgba(212, 175, 55, 0.2)"
+        y: -5,
+        scale: 1.01,
+        borderColor: "rgba(212, 175, 55, 0.3)",
+        boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.1)"
       }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ 
+        duration: 0.2, 
+        ease: [0.23, 1, 0.32, 1]
+      }}
       onClick={() => onClick(rfp)}
-      className="glass-panel rounded-xl p-5 cursor-pointer hover-glow group relative border border-white/5 hover:border-[#D4AF37]/30"
+      className="glass-panel rounded-xl p-5 cursor-pointer hover-glow group relative border border-white/5 transition-colors overflow-hidden"
     >
+      {/* Glossy overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      <div className="absolute inset-x-0 h-[1px] top-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
       {hasMissingFields && (
         <motion.div 
           initial={{ scale: 0.8, opacity: 0 }}
@@ -39,17 +49,20 @@ export default function RFPCard({ rfp, onClick }: RFPCardProps) {
         </motion.div>
       )}
       
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-start mb-4 relative z-10">
         <div className="flex-1 min-w-0 mr-2">
           <h3 className="text-white font-semibold text-lg leading-tight mb-1 group-hover:text-[#D4AF37] transition-colors line-clamp-1">{rfp.title}</h3>
           <p className="text-muted-foreground text-sm truncate">{rfp.companyName}</p>
         </div>
-        <span className={clsx("px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded-md border shrink-0 transition-colors duration-300", statusStyle.bg, statusStyle.color, statusStyle.border)}>
+        <motion.span 
+          layout
+          className={clsx("px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded-md border shrink-0 transition-colors duration-500", statusStyle.bg, statusStyle.color, statusStyle.border)}
+        >
           {rfp.status}
-        </span>
+        </motion.span>
       </div>
       
-      <div className="flex items-center gap-4 text-[11px] text-muted-foreground mt-4 pt-4 border-t border-white/5 group-hover:border-white/10 transition-colors">
+      <div className="flex items-center gap-4 text-[11px] text-muted-foreground mt-4 pt-4 border-t border-white/5 group-hover:border-white/10 transition-colors relative z-10">
         <div className="flex items-center gap-1.5">
           <Calendar className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
           {rfp.arrivalDate}
