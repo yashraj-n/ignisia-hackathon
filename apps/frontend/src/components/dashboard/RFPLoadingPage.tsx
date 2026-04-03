@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import { API_BASE_URL } from '../../lib/utils'
-import { AiLoader } from '../ui/ai-loader'
 
 interface RFPLoadingPageProps {
   rfpId: string
@@ -92,9 +91,9 @@ export default function RFPLoadingPage({
             </motion.div>
           )}
 
-          {/* AI Loading Animation */}
+          {/* Loading indicator */}
           <div className="flex flex-col items-center justify-center py-12">
-            <AiLoader className="mb-8" />
+            <Loader2 className="mb-8 h-12 w-12 text-primary animate-spin" aria-hidden />
             <p className="text-sm text-muted-foreground text-center max-w-md">
               Our AI is analyzing your RFP document and extracting key requirements.
               This may take a few moments...
