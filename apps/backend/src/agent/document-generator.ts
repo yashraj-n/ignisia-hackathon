@@ -70,7 +70,8 @@ ${summariseText}
 =======================================================
 SECTION 4: LIVE CURRENCY EXCHANGE RATES (Base: INR)
 =======================================================
-If the parsed RFP requirements indicate the client is international (outside India) or requests a specific currency, use these live rates to convert the INR prices to the client's local currency.
+Use these rates ONLY if the client is international and you need to show prices in their local currency alongside INR.
+All prices in Section 3 (Summarise Output) are already standardised to INR (₹).
 ${input.exchangeRates ? JSON.stringify(input.exchangeRates) : "Not available."}
 
 =======================================================
@@ -80,9 +81,9 @@ Use the company name "${input.companyName}" throughout the document as the respo
 Use the user-selected options (or recommended where no selection was made) for pricing in the pricing table.
 
 CRITICAL: 
-1. Identify the client's location or targeted currency from the RFP Requirements. (All current generated prices are Base: INR).
-2. If the client is international, convert the INR pricing to their local currency using the live exchange rates provided above. Provide the Final Pricing Table in the client's local currency.
-3. Determine the proper regional tax bracket (e.g., VAT, GST, State Sales Tax) based on the client's location and add it as a separate line item into the Pricing Table before the final Sub-total/Total.
+1. All pricing from the Summarise Output is already in INR (₹). Use these INR prices directly in the pricing table.
+2. If the client is international (outside India), use the exchange rates to show an ADDITIONAL column with prices in the client's local currency.
+3. Determine the proper regional tax bracket (e.g., VAT, GST, State Sales Tax) based on the client's location and add it as a separate line item in the Pricing Table before the final Total.
 =======================================================`;
 
     const result = await agent.invoke({

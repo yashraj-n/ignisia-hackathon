@@ -5,6 +5,8 @@ import { flashLlm } from "./llm";
 import { SUMMARISER_PROMPT } from "./prompts";
 import { db } from "../db";
 import { generateEmbedding } from "../utils/embedding";
+import { fetchLiveExchangeRates } from "../utils/currency";
+import { getMarketPrice } from "../utils/pricing";
 
 const summariserOptionSchema = z.object({
     name: z.string().describe("Product or service name as the customer described it in the RFP"),
@@ -149,6 +151,77 @@ function createSemanticSearchTool(companyId: string) {
     );
 }
 
+function createCurrencyConversionTool() {
+    // Cache rates per agent invocation so we don't re-fetch for every call
+    let cachedRates: Record<string, number> | null = null;
+
+    return tool(
+        async (input: { amount: number; source_currency: string }) => {
+            try {
+                if (!cachedRates) {
+                    const rates = await fetchLiveExchangeRates(undefined, "INR");
+                    if (!rates) {
+                        return `Currency conversion unavailable — exchange rate API did not respond. Use the original price as-is and note the currency.`;
+                    }
+                    cachedRates = rates;
+                }
+
+                const sourceCode = input.source_currency.toUpperCase().trim();
+
+                if (sourceCode === "INR") {
+                    return `${input.amount} INR (already in INR, no conversion needed)`;
+                }
+
+                const rateFromINR = cachedRates[sourceCode];
+                if (!rateFromINR || rateFromINR === 0) {
+                    return `Currency code "${sourceCode}" not found in exchange rate data. Known currencies: ${Object.keys(cachedRates).slice(0, 20).join(", ")}...`;
+                }
+
+                // rates are INR-based: 1 INR = rateFromINR source_currency
+                // So to convert source → INR: amount / rateFromINR
+                const inrAmount = Math.round(input.amount / rateFromINR);
+                return `${input.amount} ${sourceCode} = ₹${inrAmount.toLocaleString("en-IN")} INR (rate: 1 ${sourceCode} = ₹${Math.round(1 / rateFromINR).toLocaleString("en-IN")} INR)`;
+            } catch (error) {
+                console.error("[summariser] Currency conversion error:", error);
+                return `Currency conversion failed due to an error. Use the original price and note the currency.`;
+            }
+        },
+        {
+            name: "convert_to_inr",
+            description: "Convert a price amount from any foreign currency to Indian Rupees (INR) using live exchange rates. Use this whenever you encounter a price in a non-INR currency (USD, EUR, GBP, AED, etc.) so that all prices in your output are standardised to INR.",
+            schema: z.object({
+                amount: z.number().describe("The numeric price amount to convert (e.g. 500 for $500)"),
+                source_currency: z.string().describe("The ISO 4217 currency code of the source price (e.g. 'USD', 'EUR', 'GBP', 'AED')"),
+            }),
+        }
+    );
+}
+
+function createMarketPriceTool() {
+    return tool(
+        async (input: { product_name: string }) => {
+            try {
+                console.log(`[summariser] 🛒 Market price lookup: "${input.product_name}"`);
+                const result = await getMarketPrice(input.product_name);
+                if (!result) {
+                    return `No market price data found for "${input.product_name}".`;
+                }
+                return `Market price for "${input.product_name}": Median ₹${result.median.toLocaleString("en-IN")}, Range ₹${result.min.toLocaleString("en-IN")} – ₹${result.max.toLocaleString("en-IN")} (based on ${result.count} listings)`;
+            } catch (error) {
+                console.error("[summariser] Market price lookup error:", error);
+                return `Market price lookup failed for "${input.product_name}".`;
+            }
+        },
+        {
+            name: "get_market_price",
+            description: "Look up the current market price for a product using Google Shopping data. Returns median, min, and max prices in INR. Use this to validate your pricing options against real market data.",
+            schema: z.object({
+                product_name: z.string().describe("The product name to search for (e.g. 'Cisco Catalyst 9300 switch', 'SSL wildcard certificate')"),
+            }),
+        }
+    );
+}
+
 export function extractTextFromResult(result: any): string {
     if (typeof result === "string") return result;
 
@@ -173,10 +246,12 @@ export function extractTextFromResult(result: any): string {
 
 export async function generateSummary(input: SummariserInput) {
     const searchTool = createSemanticSearchTool(input.companyId);
+    const currencyTool = createCurrencyConversionTool();
+    const marketPriceTool = createMarketPriceTool();
 
     const agent = createAgent({
         model: flashLlm,
-        tools: [searchTool],
+        tools: [searchTool, currencyTool, marketPriceTool],
         responseFormat: summariserResponseFormat,
     });
 
