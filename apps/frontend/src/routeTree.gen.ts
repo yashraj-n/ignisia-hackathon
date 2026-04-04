@@ -14,7 +14,6 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RfpProcessingRouteImport } from './routes/rfp-processing'
 import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -45,11 +44,6 @@ const RfpProcessingRoute = RfpProcessingRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InventoryRoute = InventoryRouteImport.update({
@@ -89,7 +83,6 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
-  '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/rfp-processing': typeof RfpProcessingRoute
   '/settings': typeof SettingsRoute
@@ -103,7 +96,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
-  '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/rfp-processing': typeof RfpProcessingRoute
   '/settings': typeof SettingsRoute
@@ -118,7 +110,6 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
-  '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/rfp-processing': typeof RfpProcessingRoute
   '/settings': typeof SettingsRoute
@@ -134,7 +125,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/inventory'
-    | '/login'
     | '/profile'
     | '/rfp-processing'
     | '/settings'
@@ -148,7 +138,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/inventory'
-    | '/login'
     | '/profile'
     | '/rfp-processing'
     | '/settings'
@@ -162,7 +151,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/inventory'
-    | '/login'
     | '/profile'
     | '/rfp-processing'
     | '/settings'
@@ -177,7 +165,6 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
   InventoryRoute: typeof InventoryRoute
-  LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   RfpProcessingRoute: typeof RfpProcessingRoute
   SettingsRoute: typeof SettingsRoute
@@ -221,13 +208,6 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inventory': {
@@ -281,7 +261,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
   InventoryRoute: InventoryRoute,
-  LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   RfpProcessingRoute: RfpProcessingRoute,
   SettingsRoute: SettingsRoute,

@@ -28,7 +28,8 @@ const statusConfig: Record<RFPStatus, { label: string; className: string }> = {
 
 function truncateInfo(info: string | undefined | null, max = 50): string {
   if (!info) return "Untitled RFP";
-  const firstLine = info.split('\n')[0] ?? '';
+  let firstLine = info.split('\n')[0] ?? '';
+  firstLine = firstLine.replace(/rfp\s*(\d+)/gi, 'RFP $1');
   return firstLine.length > max ? firstLine.slice(0, max - 1) + '…' : firstLine;
 }
 

@@ -1,9 +1,11 @@
+import { useEffect } from 'react'
 import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
   redirect,
   Link,
+  useRouter,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -23,7 +25,8 @@ const THEME_INIT_SCRIPT = `(function(){try{document.documentElement.classList.ad
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   beforeLoad: ({ location }) => {
     if (typeof window === 'undefined') return;
-    if (location.pathname !== '/auth' && location.pathname !== '/') {
+    const publicRoutes = ['/', '/signup', '/auth'];
+    if (!publicRoutes.includes(location.pathname)) {
       const token = localStorage.getItem('token');
       if (!token) {
         throw redirect({
@@ -106,6 +109,17 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+
+  useEffect(() => {
+    const publicRoutes = ['/', '/signup', '/auth']
+    if (!publicRoutes.includes(window.location.pathname)) {
+      if (!localStorage.getItem('token')) {
+        router.navigate({ to: '/auth', replace: true })
+      }
+    }
+  }, [router])
+
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <head>

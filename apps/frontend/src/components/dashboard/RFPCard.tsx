@@ -25,7 +25,8 @@ const statusConfig: Record<RFPStatus, { label: string; color: string; bg: string
 
 function getDisplayTitle(information: string | undefined | null): string {
   if (!information) return "Untitled RFP";
-  const firstLine = information.split("\n")[0] ?? "";
+  let firstLine = information.split("\n")[0] ?? "";
+  firstLine = firstLine.replace(/rfp\s*(\d+)/gi, 'RFP $1');
   return firstLine.length > 60 ? firstLine.slice(0, 57) + "…" : firstLine;
 }
 
@@ -67,7 +68,7 @@ export default function RFPCard({ rfp, onClick }: RFPCardProps) {
       <div className="flex justify-between items-start mb-4 relative z-10">
         <div className="flex-1 min-w-0 mr-2">
           <h3 className="text-white font-semibold text-lg leading-tight mb-1 group-hover:text-primary transition-colors line-clamp-1">{displayTitle}</h3>
-          <p className="text-muted-foreground text-sm truncate">{rfp.source_email ?? "Unknown source"}</p>
+          <br/>
         </div>
         <motion.span 
           layout

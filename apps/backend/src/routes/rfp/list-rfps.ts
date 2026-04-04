@@ -25,32 +25,7 @@ export async function listRfpsRoute(fastify: FastifyInstance) {
         },
       });
 
-      const formattedRfps = rfps.map((rfp) => {
-        const statusMap: Record<string, string> = {
-          parsed: 'Processing',
-          explored: 'Processing',
-          summarised: 'Processing',
-          Accepted: 'Accepted',
-          Rejected: 'Rejected',
-          Pending: 'Pending',
-          Processing: 'Processing',
-        };
-
-        return {
-          id: rfp.id,
-          title: rfp.information || 'Untitled RFP',
-          companyName: 'Acme Corp', // TODO: get from company
-          arrivalDate: rfp.createdAt.toISOString().split('T')[0],
-          arrivalTime: rfp.createdAt.toTimeString().split(' ')[0],
-          status: statusMap[rfp.status] || 'Processing',
-          scopeOfWork: rfp.information || '',
-          infrastructureDetected: [], // TODO
-          assetsDetected: [], // TODO
-          missingFields: (rfp.parsed_output as any)?.missingFields || [],
-        };
-      });
-
-      return { ok: true, rfps: formattedRfps };
+      return { ok: true, rfps };
     }
   );
 }
