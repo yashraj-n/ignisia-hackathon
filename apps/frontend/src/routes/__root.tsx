@@ -23,7 +23,7 @@ const THEME_INIT_SCRIPT = `(function(){try{document.documentElement.classList.ad
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   beforeLoad: ({ location }) => {
     if (typeof window === 'undefined') return;
-    if (location.pathname !== '/auth') {
+    if (location.pathname !== '/auth' && location.pathname !== '/') {
       const token = localStorage.getItem('token');
       if (!token) {
         throw redirect({
