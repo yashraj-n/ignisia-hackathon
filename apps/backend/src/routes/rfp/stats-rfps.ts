@@ -34,10 +34,14 @@ export async function rfpStatsRoute(fastify: FastifyInstance) {
       });
 
       const total = rfps.length;
-      const accepted = rfps.filter((r) => r.status === "Accepted").length;
-      const rejected = rfps.filter((r) => r.status === "Rejected").length;
-      const pending = rfps.filter((r) => r.status === "Pending").length;
-      const processing = rfps.filter((r) => r.status === "Processing").length;
+      
+      const rejectedStatuses = ['parse_rejected', 'explore_rejected', 'summarise_rejected', 'failed', 'Rejected'];
+      const pendingStatuses = ['parsed', 'exploring', 'explored', 'summarising', 'summarised', 'generating_document', 'processing', 'Pending'];
+
+      const completed = rfps.filter((r) => r.status === "completed" || r.status === "Accepted").length;
+      const rejected = rfps.filter((r) => rejectedStatuses.includes(r.status)).length;
+      const pending = rfps.filter((r) => pendingStatuses.includes(r.status)).length;
+      const processing = pending;
 
       const weeklyDays = getLast7Days();
       const weekly = weeklyDays.map(({ date, label }) => {
@@ -49,7 +53,7 @@ export async function rfpStatsRoute(fastify: FastifyInstance) {
       });
 
       const statusDistribution = {
-        accepted,
+        accepted: completed,
         rejected,
         pending,
         processing,
@@ -57,12 +61,14 @@ export async function rfpStatsRoute(fastify: FastifyInstance) {
 
       const stats = {
         total,
-        accepted,
+        accepted: completed,
+        completed,
         rejected,
         pending,
         processing,
         totalChange: 0,
         acceptedChange: 0,
+        completedChange: 0,
         rejectedChange: 0,
         pendingChange: 0,
       };

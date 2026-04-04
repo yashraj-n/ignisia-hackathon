@@ -37,9 +37,8 @@ export default function RecentRFPs({ rfps, onSelectRFP }: RecentRFPsProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-white tracking-tight">Recent RFPs</h2>
+    <div className="flex flex-col gap-3">
+      <div className="flex justify-end">
         <div className="flex items-center bg-[#111111] border border-white/[0.08] rounded-lg p-1">
           <button
             onClick={() => setViewMode('grid')}
@@ -63,22 +62,24 @@ export default function RecentRFPs({ rfps, onSelectRFP }: RecentRFPsProps) {
       </div>
 
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {rfps.length > 0 ? (
-            rfps.slice(0, 4).map((rfp) => (
-              <RFPCard key={rfp.id} rfp={rfp} onClick={onSelectRFP} />
-            ))
-          ) : (
-            Array.from({ length: 4 }).map((_, idx) => (
-              <div
-                key={`placeholder-${idx}`}
-                className="glass-panel rounded-xl p-5 border border-dashed border-white/10 text-muted-foreground flex flex-col justify-center items-center min-h-[180px]"
-              >
-                <p className="text-sm font-semibold">No recent RFP available</p>
-                <p className="text-xs text-gray-400 mt-2">Upload or ingest an RFP to start tracking</p>
-              </div>
-            ))
-          )}
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {rfps.length > 0 ? (
+              rfps.map((rfp) => (
+                <RFPCard key={rfp.id} rfp={rfp} onClick={onSelectRFP} />
+              ))
+            ) : (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <div
+                  key={`placeholder-${idx}`}
+                  className="glass-panel rounded-xl p-4 border border-dashed border-white/10 text-muted-foreground flex flex-col justify-center items-center h-[140px]"
+                >
+                  <p className="text-sm font-semibold">No recent RFP available</p>
+                  <p className="text-xs text-gray-400 mt-2">Upload or ingest an RFP to start tracking</p>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       ) : (
         <div className="glass-panel rounded-xl overflow-hidden">
@@ -93,7 +94,10 @@ export default function RecentRFPs({ rfps, onSelectRFP }: RecentRFPsProps) {
             </TableHeader>
             <TableBody>
               {rfps.map((rfp) => {
-                const st = statusConfig[rfp.status];
+                const st = statusConfig[rfp.status as RFPStatus] || { 
+                  label: String(rfp.status).replace(/_/g, ' ') || "Unknown", 
+                  className: "bg-white/10 text-white border-white/20" 
+                };
                 const dateStr = new Date(rfp.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
                 return (
                   <TableRow 

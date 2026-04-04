@@ -32,7 +32,7 @@ const BarChart = ({ weekly }: { weekly?: Array<{ day: string; count: number }> }
             {data.map((item, i) => (
                 <div key={i} className="flex flex-col items-center flex-1 h-full group">
                     <div className="relative flex-1 w-full flex items-end">
-                        <motion.div 
+                        <motion.div
                             initial={{ height: 0 }}
                             animate={{ height: `${item.value}%` }}
                             transition={{ duration: 1, delay: i * 0.1, ease: "easeOut" }}
@@ -75,11 +75,11 @@ const BentoItem = ({ className, children }: { className?: string, children: Reac
     return (
         <div ref={itemRef} className={`relative group bg-[#111111] border border-white/10 rounded-2xl p-6 overflow-hidden ${className || ''}`}>
             {/* Cybernetic mouse-follow glow effect */}
-            <div 
-                className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 group-hover:opacity-100" 
+            <div
+                className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 group-hover:opacity-100"
                 style={{
                     background: `radial-gradient(600px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(212,175,55,0.08), transparent 40%)`
-                }} 
+                }}
             />
             <div className="relative z-10 h-full flex flex-col">
                 {children}
@@ -153,8 +153,10 @@ export const CyberneticBentoGrid = ({ stats, weekly, rfps, isLoading, onNewBid, 
                     <p className="text-xs text-gray-500 mt-1">Awaiting</p>
                 </BentoItem>
 
-                {/* RFPs Block - full width */}
-                <BentoItem className="col-span-1 md:col-span-4 row-span-2 overflow-y-auto">
+            </div>
+           
+            <div className="mt-4">
+                <BentoItem className="w-full">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <FileText className="w-8 h-8 text-[#C0C0C0]" />
@@ -177,11 +179,11 @@ export const CyberneticBentoGrid = ({ stats, weekly, rfps, isLoading, onNewBid, 
                             </button>
                         </div>
                     </div>
-                    <div className="flex-1 overflow-hidden">
+                    <div className="w-full pb-2">
                         {isLoading ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 {[...Array(4)].map((_, i) => (
-                                    <div key={i} className="bg-black/30 border border-white/5 rounded-xl h-40 animate-pulse" />
+                                    <div key={i} className="bg-black/30 border border-white/5 rounded-xl h-[140px] animate-pulse" />
                                 ))}
                             </div>
                         ) : (
@@ -190,49 +192,49 @@ export const CyberneticBentoGrid = ({ stats, weekly, rfps, isLoading, onNewBid, 
                     </div>
                 </BentoItem>
             </div>
-        </div>
+        </div >
     );
 };
 
 export const Route = createFileRoute('/dashboard')({
-  component: DashboardComponent,
+    component: DashboardComponent,
 })
 
 function DashboardComponent() {
-  const navigate = useNavigate()
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+    const navigate = useNavigate()
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
 
-  const { data: analytics, isLoading: isStatsLoading } = useQuery(rfpQueries.stats())
-  const { data: rfps = [], isLoading: isRFPsLoading } = useQuery(rfpQueries.list())
+    const { data: analytics, isLoading: isStatsLoading } = useQuery(rfpQueries.stats())
+    const { data: rfps = [], isLoading: isRFPsLoading } = useQuery(rfpQueries.list())
 
-  const stats = analytics?.stats || computeRFPStats(rfps)
-  const isLoading = isStatsLoading || isRFPsLoading;
+    const stats = analytics?.stats || computeRFPStats(rfps)
+    const isLoading = isStatsLoading || isRFPsLoading;
 
-  return (
-    <AppLayout>
-      <div className="p-8 pb-32 min-h-screen relative bg-black">
-        {/* Grid background pattern */}
-        <BGPattern variant="grid" mask="fade-edges" size={32} fill="rgba(255, 255, 255, 0.02)" />
-        
-        <div className="max-w-7xl mx-auto relative z-10 space-y-2">
-          <CyberneticBentoGrid 
-            stats={stats} 
-            weekly={analytics?.weekly}
-            rfps={rfps} 
-            isLoading={isLoading} 
-            onNewBid={() => setIsUploadModalOpen(true)}
-            onEditInventory={() => navigate({ to: '/inventory' })}
-            onSelectRFP={(rfp: RFPItem) => navigate({ to: '/rfp/$id', params: { id: rfp.id } })}
-            onAnalytics={() => navigate({ to: '/analytics' })}
-          />
+    return (
+        <AppLayout>
+            <div className="p-8 pb-32 min-h-screen relative bg-black">
+                {/* Grid background pattern */}
+                <BGPattern variant="grid" mask="fade-edges" size={32} fill="rgba(255, 255, 255, 0.02)" />
 
-        </div>
+                <div className="max-w-7xl mx-auto relative z-10 space-y-2">
+                    <CyberneticBentoGrid
+                        stats={stats}
+                        weekly={analytics?.weekly}
+                        rfps={rfps}
+                        isLoading={isLoading}
+                        onNewBid={() => setIsUploadModalOpen(true)}
+                        onEditInventory={() => navigate({ to: '/inventory' })}
+                        onSelectRFP={(rfp: RFPItem) => navigate({ to: '/rfp/$id', params: { id: rfp.id } })}
+                        onAnalytics={() => navigate({ to: '/analytics' })}
+                    />
 
-        <UploadModal 
-          isOpen={isUploadModalOpen} 
-          onClose={() => setIsUploadModalOpen(false)} 
-        />
-      </div>
-    </AppLayout>
-  )
+                </div>
+
+                <UploadModal
+                    isOpen={isUploadModalOpen}
+                    onClose={() => setIsUploadModalOpen(false)}
+                />
+            </div>
+        </AppLayout>
+    )
 }
