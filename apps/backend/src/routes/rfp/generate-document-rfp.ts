@@ -6,6 +6,7 @@ import type { RFPParserResponse } from "../../agent/parser";
 import type { SummariserResponse } from "../../agent/summariser";
 import s3 from "../../utils/s3-client";
 import { mdToPdf } from "md-to-pdf";
+import { fetchLiveExchangeRates } from "../../utils/currency";
 
 export async function generateDocumentRfpRoute(fastify: FastifyInstance) {
   fastify.post<{ Params: { id: string }; Body: { choices?: { itemIndex: number; selectedOptionIndex: number }[] } }>(
@@ -46,7 +47,7 @@ export async function generateDocumentRfpRoute(fastify: FastifyInstance) {
       // Set status to generating_document immediately and persist user choices
       await db.rFP.update({
         where: { id },
-        data: { status: "generating_document", user_choices: choices },
+        data: { status: "generating_document", user_choices: choices } as any,
       });
 
       try {
@@ -58,6 +59,9 @@ export async function generateDocumentRfpRoute(fastify: FastifyInstance) {
         const company = await db.company.findUnique({ where: { id: rfp.company_id }, select: { name: true } });
         const companyName = company?.name ?? "Our Company";
 
+        // Fetch Live Exchange Rates (Base: INR)
+        const exchangeRates = await fetchLiveExchangeRates(fastify.log, "INR");
+
         // Generate the markdown document
         const markdownContent = await generateFinalDocument({
           parsedOutput,
@@ -66,6 +70,7 @@ export async function generateDocumentRfpRoute(fastify: FastifyInstance) {
           companyId: rfp.company_id,
           companyName,
           userChoices: choices,
+          exchangeRates,
         });
 
         // Convert markdown to PDF

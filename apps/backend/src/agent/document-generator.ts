@@ -16,6 +16,7 @@ export interface GenerateDocumentInput {
     companyId: string;
     companyName: string;
     userChoices?: UserChoice[];
+    exchangeRates?: Record<string, number>;
 }
 
 
@@ -67,10 +68,21 @@ SECTION 3: SUMMARISE OUTPUT (Strategic Pricing Decisions)
 ${summariseText}
 
 =======================================================
+SECTION 4: LIVE CURRENCY EXCHANGE RATES (Base: INR)
+=======================================================
+If the parsed RFP requirements indicate the client is international (outside India) or requests a specific currency, use these live rates to convert the INR prices to the client's local currency.
+${input.exchangeRates ? JSON.stringify(input.exchangeRates) : "Not available."}
+
+=======================================================
 INSTRUCTIONS:
 Generate the full RFP response document on behalf of "${input.companyName}".
 Use the company name "${input.companyName}" throughout the document as the responding/proposing entity.
 Use the user-selected options (or recommended where no selection was made) for pricing in the pricing table.
+
+CRITICAL: 
+1. Identify the client's location or targeted currency from the RFP Requirements. (All current generated prices are Base: INR).
+2. If the client is international, convert the INR pricing to their local currency using the live exchange rates provided above. Provide the Final Pricing Table in the client's local currency.
+3. Determine the proper regional tax bracket (e.g., VAT, GST, State Sales Tax) based on the client's location and add it as a separate line item into the Pricing Table before the final Sub-total/Total.
 =======================================================`;
 
     const result = await agent.invoke({
