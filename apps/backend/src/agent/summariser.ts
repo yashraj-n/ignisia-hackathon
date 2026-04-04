@@ -211,10 +211,13 @@ INSTRUCTIONS:
 2. After gathering past RFP data, produce your structured decision for each product/service. Do NOT return an empty items array.
 =======================================================`;
 
-    return await agent.invoke({
-        messages: [
-            new SystemMessage(SUMMARISER_PROMPT),
-            new HumanMessage({ content: userMessage }),
-        ],
-    });
+    return await agent.invoke(
+        {
+            messages: [
+                new SystemMessage(SUMMARISER_PROMPT),
+                new HumanMessage({ content: userMessage }),
+            ],
+        },
+        { recursionLimit: 50 },
+    );
 }

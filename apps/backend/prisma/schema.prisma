@@ -60,6 +60,7 @@ model RFP{
   parsed_output      Json?
   explore_output     String?
   summarise_output   Json?
+  user_choices       Json?
   final_document_url String?
   rejection_reason   String?
   rejected_at_step   String?

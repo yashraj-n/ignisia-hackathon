@@ -38,6 +38,7 @@ export interface RFPItem {
   parsed_output: RFPParsedOutput | null;
   explore_output: string | null;
   summarise_output: SummariserResponse | null;
+  user_choices?: { itemIndex: number; selectedOptionIndex: number }[] | null;
   final_document_url: string | null;
   rejection_reason: string | null;
   rejected_at_step: string | null;

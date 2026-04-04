@@ -4,34 +4,47 @@ import { FINAL_DOCUMENT_PROMPT } from "./prompts";
 import type { RFPParserResponse } from "./parser";
 import type { SummariserResponse } from "./summariser";
 
+export interface UserChoice {
+    itemIndex: number;
+    selectedOptionIndex: number;
+}
+
 export interface GenerateDocumentInput {
     parsedOutput: RFPParserResponse;
     exploreOutput: string;
     summariseOutput: SummariserResponse;
     companyId: string;
+    companyName: string;
+    userChoices?: UserChoice[];
 }
 
-/**
- * Generates a professional RFP response document in markdown format
- * using all three prior step outputs.
- * Returns the markdown string.
- */
+
 export async function generateFinalDocument(input: GenerateDocumentInput): Promise<string> {
     const agent = createAgent({ model: flashLlm });
 
     const summariseText = input.summariseOutput.items
         .map((item, i) => {
-            const recommended = item.options[item.recommended_option_index] || item.options[0];
+            const userChoice = input.userChoices?.find(c => c.itemIndex === i);
+            const selectedIndex = userChoice !== undefined
+                && userChoice.selectedOptionIndex >= 0
+                && userChoice.selectedOptionIndex < item.options.length
+                ? userChoice.selectedOptionIndex
+                : item.recommended_option_index;
+            const selectedOption = item.options[selectedIndex] || item.options[0];
             return `### ${item.name}
 - Current Price: ${item.current_price}
 - Average Competitor Price: ${item.avg_competitor_price ?? "N/A"}
-- Recommended Option: ${recommended}
+- Selected Option: ${selectedOption}
 - All Options:
-${item.options.map((opt, j) => `  ${j === item.recommended_option_index ? "→" : " "} ${j + 1}. ${opt}`).join("\n")}`;
+${item.options.map((opt, j) => `  ${j === selectedIndex ? "→" : " "} ${j + 1}. ${opt}`).join("\n")}`;
         })
         .join("\n\n");
 
     const userMessage = `
+=======================================================
+COMPANY NAME: ${input.companyName}
+=======================================================
+
 =======================================================
 SECTION 1: PARSED RFP REQUIREMENTS
 =======================================================
@@ -55,8 +68,9 @@ ${summariseText}
 
 =======================================================
 INSTRUCTIONS:
-Generate the full RFP response document as specified in your system prompt.
-Use the recommended options for pricing in the pricing table.
+Generate the full RFP response document on behalf of "${input.companyName}".
+Use the company name "${input.companyName}" throughout the document as the responding/proposing entity.
+Use the user-selected options (or recommended where no selection was made) for pricing in the pricing table.
 =======================================================`;
 
     const result = await agent.invoke({
@@ -66,7 +80,6 @@ Use the recommended options for pricing in the pricing table.
         ],
     });
 
-    // Extract the text content from the agent result
     const lastMessage = result?.messages?.at(-1);
     if (lastMessage) {
         const content = lastMessage.content;

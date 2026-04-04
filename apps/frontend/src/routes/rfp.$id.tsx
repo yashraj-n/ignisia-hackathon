@@ -178,10 +178,10 @@ function RFPDetailPage() {
     }
   }
 
-  async function handleGenerate() {
+  async function handleGenerate(choices: { itemIndex: number; selectedOptionIndex: number }[]) {
     setActionLoading(true)
     try {
-      await generateDocument(id)
+      await generateDocument(id, choices)
       await queryClient.invalidateQueries({ queryKey: ['rfps', id] })
     } catch (e) {
       console.error(e)
@@ -512,7 +512,7 @@ function SummarisePanel({
 }: {
   rfp: RFPItem
   actionLoading: boolean
-  onGenerate: () => void
+  onGenerate: (choices: { itemIndex: number; selectedOptionIndex: number }[]) => void
   onReject: () => void
 }) {
   if (rfp.status === 'generating_document') {
@@ -521,6 +521,34 @@ function SummarisePanel({
 
   const items: SummariserItem[] = rfp.summarise_output?.items ?? []
 
+  // Selection state: key = item index, value = selected option index
+  const [selections, setSelections] = useState<Record<number, number>>(() => {
+    const initial: Record<number, number> = {}
+    items.forEach((item, i) => {
+      initial[i] = item.recommended_option_index
+    })
+    return initial
+  })
+
+  // Re-sync when items change (e.g. after refetch)
+  useEffect(() => {
+    const initial: Record<number, number> = {}
+    items.forEach((item, i) => {
+      initial[i] = item.recommended_option_index
+    })
+    setSelections(initial)
+  }, [rfp.summarise_output])
+
+  const allSelected = Object.keys(selections).length === items.length
+
+  function handleGenerateClick() {
+    const choices = Object.entries(selections).map(([itemIndex, selectedOptionIndex]) => ({
+      itemIndex: Number(itemIndex),
+      selectedOptionIndex,
+    }))
+    onGenerate(choices)
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -528,7 +556,10 @@ function SummarisePanel({
       className="space-y-6"
     >
       <div className="glass-panel rounded-2xl p-6 space-y-4">
-        <h2 className="text-lg font-bold text-white">Summarised Pricing Comparison</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-white">Summarised Pricing Comparison</h2>
+          <span className="text-xs text-white/40">Click an option to select it for each item</span>
+        </div>
 
         <div className="rounded-xl border border-white/10 overflow-hidden">
           <Table>
@@ -538,45 +569,54 @@ function SummarisePanel({
                 <TableHead className="text-white/60">Our Price</TableHead>
                 <TableHead className="text-white/60">Avg Competitor Price</TableHead>
                 <TableHead className="text-white/60">Options</TableHead>
-                <TableHead className="text-white/60">Recommended</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((item, idx) => (
-                <TableRow key={idx} className="border-white/5 hover:bg-white/[0.03]">
-                  <TableCell className="font-medium text-white">{item.name}</TableCell>
-                  <TableCell className="text-white/80">{item.current_price}</TableCell>
-                  <TableCell className="text-white/80">
-                    {item.avg_competitor_price ?? '—'}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1.5">
-                      {item.options.map((opt, oi) => (
-                        <span
-                          key={oi}
-                          className={clsx(
-                            'text-xs px-2 py-0.5 rounded-full border font-medium',
-                            oi === item.recommended_option_index
-                              ? 'bg-[#D4AF37]/15 border-[#D4AF37]/40 text-[#D4AF37]'
-                              : 'bg-white/5 border-white/10 text-white/50',
-                          )}
-                        >
-                          {opt}
-                        </span>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#D4AF37]">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      {item.options[item.recommended_option_index] ?? '—'}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {items.map((item, idx) => {
+                const selectedIdx = selections[idx] ?? item.recommended_option_index
+
+                return (
+                  <TableRow key={idx} className="border-white/5 hover:bg-white/[0.03]">
+                    <TableCell className="font-medium text-white">{item.name}</TableCell>
+                    <TableCell className="text-white/80">{item.current_price}</TableCell>
+                    <TableCell className="text-white/80">
+                      {item.avg_competitor_price ?? '—'}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1.5">
+                        {item.options.map((opt, oi) => {
+                          const isSelected = oi === selectedIdx
+                          const isRecommended = oi === item.recommended_option_index
+
+                          return (
+                            <button
+                              key={oi}
+                              type="button"
+                              onClick={() =>
+                                setSelections((prev) => ({ ...prev, [idx]: oi }))
+                              }
+                              className={clsx(
+                                'text-xs px-2.5 py-1 rounded-full border font-medium transition-all duration-200 cursor-pointer inline-flex items-center gap-1',
+                                isSelected
+                                  ? 'bg-[#D4AF37]/15 border-[#D4AF37]/40 text-[#D4AF37] shadow-[0_0_8px_rgba(212,175,55,0.15)]'
+                                  : 'bg-white/5 border-white/10 text-white/50 hover:border-white/25 hover:text-white/70',
+                              )}
+                            >
+                              {opt}
+                              {isRecommended && (
+                                <span className="text-[10px] opacity-70" title="AI Recommended">★</span>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
               {items.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                     No summarised items available.
                   </TableCell>
                 </TableRow>
@@ -588,9 +628,10 @@ function SummarisePanel({
 
       <ActionBar
         primaryLabel="Generate Final Document"
-        onPrimary={onGenerate}
+        onPrimary={handleGenerateClick}
         onReject={onReject}
         loading={actionLoading}
+        disabled={!allSelected}
       />
     </motion.div>
   )
@@ -634,7 +675,7 @@ function DocumentPanel({
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#D4AF37] hover:bg-[#E5B80B] text-black font-bold transition-colors shadow-[0_0_20px_rgba(234,179,8,0.3)]"
         >
           <Download className="w-5 h-5" />
-          Download Final Document
+          Download PDF
         </a>
         <button
           onClick={() => navigate({ to: '/dashboard' })}
@@ -722,11 +763,13 @@ function ActionBar({
   onPrimary,
   onReject,
   loading,
+  disabled,
 }: {
   primaryLabel: string
   onPrimary: () => void
   onReject: () => void
   loading: boolean
+  disabled?: boolean
 }) {
   return (
     <div className="flex flex-col sm:flex-row items-center gap-3 sm:justify-end">
@@ -739,7 +782,7 @@ function ActionBar({
       </button>
       <button
         onClick={onPrimary}
-        disabled={loading}
+        disabled={loading || disabled}
         className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#D4AF37] hover:bg-[#E5B80B] text-black font-bold transition-colors disabled:opacity-50 shadow-[0_0_15px_rgba(234,179,8,0.2)]"
       >
         {loading && <Loader2 className="w-4 h-4 animate-spin" />}

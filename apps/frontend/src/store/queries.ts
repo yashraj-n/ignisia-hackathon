@@ -6,8 +6,14 @@ const API_BASE = 'http://localhost:9000';
 function getAuthHeaders() {
   const token = localStorage.getItem('token');
   return {
-    'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+function getJsonHeaders() {
+  return {
+    ...getAuthHeaders(),
+    'Content-Type': 'application/json',
   };
 }
 
@@ -103,10 +109,14 @@ export async function summariseRfp(id: string): Promise<void> {
   }
 }
 
-export async function generateDocument(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/rfp/${id}/generate`, {
+export async function generateDocument(
+  id: string,
+  choices: { itemIndex: number; selectedOptionIndex: number }[],
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/rfp/${id}/generate-document`, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: getJsonHeaders(),
+    body: JSON.stringify({ choices }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -117,7 +127,7 @@ export async function generateDocument(id: string): Promise<void> {
 export async function rejectRfp(id: string, reason: string): Promise<void> {
   const res = await fetch(`${API_BASE}/api/rfp/${id}/reject`, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: getJsonHeaders(),
     body: JSON.stringify({ reason }),
   });
   if (!res.ok) {
@@ -179,7 +189,7 @@ export async function uploadInventory(payload: UploadPayload): Promise<Inventory
   const base64 = await fileToBase64(payload.file);
   const res = await fetch(`${API_BASE}/api/company/add-inventory`, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: getJsonHeaders(),
     body: JSON.stringify({
       name: getNameWithoutExtension(payload.file.name),
       fileData: base64,
@@ -199,7 +209,7 @@ export async function uploadCompetitor(payload: UploadPayload): Promise<Competit
   const base64 = await fileToBase64(payload.file);
   const res = await fetch(`${API_BASE}/api/company/add-competitor`, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: getJsonHeaders(),
     body: JSON.stringify({
       name: getNameWithoutExtension(payload.file.name),
       fileData: base64,
