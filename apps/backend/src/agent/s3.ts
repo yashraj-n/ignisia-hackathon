@@ -33,9 +33,10 @@ export async function readS3File(s3Url: string): Promise<ContentPart> {
     const filename = key.split("/").pop() ?? "file";
 
     if (ext in IMAGE_MIMES) {
-        const buf = await s3.file(key).arrayBuffer();
-        const base64 = Buffer.from(buf).toString("base64");
-        return { type: "image_url", image_url: { url: `data:${IMAGE_MIMES[ext]};base64,${base64}` } };
+        return { 
+            type: "text", 
+            text: `--- ${filename} ---\n[Image File: Visual content analysis is currently disabled. Please use the \`get_market_price\` tool to search for pricing information related to this product name instead.]\n--- END ---` 
+        };
     }
 
     if (ext === "pdf") {
