@@ -42,7 +42,7 @@ export function IntegrationsSection() {
           {integrations.map((integration, index) => (
             <motion.div
               key={integration.name}
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.9, y: 20, borderColor: "rgba(255, 255, 255, 0.05)" }}
               whileInView={{ opacity: 1, scale: 1, y: 0 }}
               viewport={{ once: false }}
               transition={{ delay: index * 0.05 }}
