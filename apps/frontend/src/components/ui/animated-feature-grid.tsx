@@ -6,7 +6,7 @@ import { FileSearch, Database, PenTool, BarChart3 } from "lucide-react";
 
 export function AnimatedFeatureGrid() {
     return (
-        <section className="py-24 px-6 relative z-10 bg-[#030303] border-t border-white/5">
+        <section id="features" className="py-24 px-6 relative z-10 bg-[#030303] border-t border-white/5">
             <div className="max-w-6xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 40 }}

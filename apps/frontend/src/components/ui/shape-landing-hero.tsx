@@ -81,8 +81,8 @@ function ElegantShape({
 }
 
 function HeroGeometric({
-    title1 = "Win More Bids",
-    title2 = "with AI.",
+    title1 = "Win More with",
+    title2 = "BidForge AI.",
 }: {
     title1?: string;
     title2?: string;
@@ -115,7 +115,7 @@ function HeroGeometric({
     };
 
     return (
-        <div 
+        <div
             onMouseMove={handleMouseMove}
             className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#030303]"
         >
@@ -214,8 +214,8 @@ function HeroGeometric({
                         animate="visible"
                     >
                         <p className="text-lg sm:text-xl md:text-2xl text-white/40 mb-8 leading-relaxed font-light tracking-wide max-w-2xl mx-auto px-4">
-                            Crafting exceptional digital experiences through
-                            innovative design and cutting-edge technology.
+                            Automate your entire RFP pipeline — from parsing to
+                            proposal — with AI agents that learn from your wins.
                         </p>
                     </motion.div>
                 </div>

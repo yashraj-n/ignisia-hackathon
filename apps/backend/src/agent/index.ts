@@ -6,10 +6,18 @@ import { generateSummary, extractTextFromResult, type SummariserResponse } from 
 
 /**
  * Step 1 — Parse: runs the parser agent on an incoming email.
- * Returns the structured RFPParserResponse.
  */
 export async function runParseStep(email: EmailEvent): Promise<RFPParserResponse> {
     const parseResult = await parseEmail(email);
+    return parseResult.structuredResponse as RFPParserResponse;
+}
+
+/**
+ * Alternative Step 1 — Parse Text: runs the parser agent on raw text (manual upload).
+ */
+export async function runParseTextStep(text: string): Promise<RFPParserResponse> {
+    const { parseText } = await import("./parser");
+    const parseResult = await parseText(text);
     return parseResult.structuredResponse as RFPParserResponse;
 }
 

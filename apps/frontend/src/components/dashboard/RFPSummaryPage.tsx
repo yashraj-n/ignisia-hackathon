@@ -225,9 +225,9 @@ export default function RFPSummaryPage({
             </button>
             <button
               onClick={onProceed}
-              className="flex-1 py-3 px-4 rounded-lg bg-primary text-black hover:bg-primary/90 transition-colors font-medium shadow-[0_0_20px_rgba(234,179,8,0.3)]"
+              className="flex-1 py-3 px-4 rounded-lg bg-[#D4AF37] text-black hover:bg-[#E5B80B] transition-colors font-medium shadow-[0_0_20px_rgba(234,179,8,0.3)]"
             >
-              Proceed Anyway
+              Proceed to Workspace
             </button>
           </motion.div>
         </div>

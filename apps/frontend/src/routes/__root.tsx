@@ -3,7 +3,6 @@ import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
-  redirect,
   Link,
   useRouter,
 } from '@tanstack/react-router'
@@ -11,7 +10,6 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
-import appCss from '../styles.css?url'
 import { Button } from '../components/ui/button'
 
 import type { QueryClient } from '@tanstack/react-query'
@@ -23,17 +21,8 @@ interface MyRouterContext {
 const THEME_INIT_SCRIPT = `(function(){try{document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';}catch(e){}})();`
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-  beforeLoad: ({ location }) => {
-    if (typeof window === 'undefined') return;
-    const publicRoutes = ['/', '/signup', '/auth'];
-    if (!publicRoutes.includes(location.pathname)) {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw redirect({
-          to: '/auth',
-        })
-      }
-    }
+  beforeLoad: () => {
+    // Corrected: Handled in RootDocument to avoid hydration mismatch in beforeLoad logic
   },
   head: () => ({
     meta: [
@@ -45,7 +34,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'BidForge - Command Center',
+        title: 'BidForge — AI-Powered RFP Automation',
       },
     ],
     links: [
@@ -61,7 +50,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         rel: 'stylesheet',
-        href: appCss,
+        href: '/src/styles.css',
       },
     ],
   }),

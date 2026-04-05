@@ -32,6 +32,21 @@
   }
 }
 
+@theme {
+  --animate-bidforge-marquee: bidforge-marquee 40s linear infinite;
+  --animate-shimmer: shimmer 3s infinite;
+
+  @keyframes bidforge-marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-33.33%); }
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #9ca3af;
@@ -188,11 +203,6 @@ code {
   }
 }
 
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
 .animate-shimmer {
   position: relative;
   overflow: hidden;
@@ -211,6 +221,6 @@ code {
     rgba(255, 255, 255, 0.2),
     transparent
   );
-  animation: shimmer 3s infinite;
+  animation: var(--animate-shimmer);
 }
 

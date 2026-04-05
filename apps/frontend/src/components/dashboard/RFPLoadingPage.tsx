@@ -24,15 +24,24 @@ export default function RFPLoadingPage({
   useEffect(() => {
     const processRFP = async () => {
       try {
-        // Simulate processing time (8-10 seconds total)
-        await new Promise((resolve) => setTimeout(resolve, 8000 + Math.random() * 2000))
+        // Phase 1: Real-time AI Parsing
+        const parseResponse = await fetch(`${API_BASE_URL}/api/rfp/${rfpId}/parse`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        if (!parseResponse.ok) {
+          throw new Error('Parsing failed')
+        }
 
         setIsProcessing(false)
 
-        // Fetch missing requirements and summary
+        // Phase 2: Fetch missing requirements and summary
         const response = await fetch(`${API_BASE_URL}/api/rfp/${rfpId}/summary`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         })
 

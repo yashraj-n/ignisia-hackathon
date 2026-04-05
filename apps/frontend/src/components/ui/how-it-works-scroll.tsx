@@ -6,20 +6,20 @@ import { FileDown, DatabaseZap, FileCheck2 } from "lucide-react";
 const steps = [
     {
         id: "step-1",
-        title: "1. Deconstruct",
+        title: "1. Deconstruct & Parse",
         description:
-            "Upload any RFP document—regardless of length or formatting complexity. BidForge's advanced local AI engines instantly parse the document, extracting core deliverables, compliance requirements, and hidden criteria into actionable data structures.",
+            "Upload any RFP document—regardless of length or formatting complexity. BidForge's Document Parsing Agent instantly extracts core deliverables, compliance requirements, and hidden criteria into actionable data structures.",
         icon: <FileDown className="w-10 h-10 text-emerald-400" />,
         visualColor: "from-emerald-900/40 to-emerald-500/10",
-        visualMockup: "Analyzing 400-page enterprise RFP...",
+        visualMockup: "Extracting 142 discrete requirements...",
         visualMockupColor: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
         barWidths: ["75%", "45%"],
     },
     {
         id: "step-2",
-        title: "2. Sync Portfolio",
+        title: "2. Inventory Database Sync",
         description:
-            "Our proprietary RAG (Retrieval-Augmented Generation) engine scans your entire organizational inventory. It matches current RFP queries against your historical wins, verified security postures, and past technical architectures.",
+            "Our proprietary Inventory RAG (Retrieval-Augmented Generation) engine scans your entire organizational inventory. It matches current RFP queries against your historical wins, verified security postures, and past technical architectures.",
         icon: <DatabaseZap className="w-10 h-10 text-violet-400" />,
         visualColor: "from-violet-900/40 to-violet-500/10",
         visualMockup: "Retrieving 34 verified answers from Knowledge Base...",
@@ -28,12 +28,34 @@ const steps = [
     },
     {
         id: "step-3",
-        title: "3. Auto-Draft & Review",
+        title: "3. Competitor Intelligence",
         description:
-            "BidForge synthesizes the parsed requirements and your historical data into a highly compliant, cohesive draft response. Your team collaborates in real-time to refine the final output—slashing proposal turnaround by up to 70%.",
+            "The Competitor Analysis Agent sweeps the market, identifying typical pricing strategies, feature gaps, and positioning tactics of your key rivals for this specific bid type.",
+        icon: <svg className="w-10 h-10 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg>,
+        visualColor: "from-cyan-900/40 to-cyan-500/10",
+        visualMockup: "Analyzing 3 primary competitors & market averages...",
+        visualMockupColor: "text-cyan-400 bg-cyan-400/10 border-cyan-400/20",
+        barWidths: ["40%", "95%", "60%"],
+    },
+    {
+        id: "step-4",
+        title: "4. AI Strategy & Summarization",
+        description:
+            "Before drafting begins, our Summarization Agent condenses all retrieved data and competitor insights into a unified strategy brief. It ensures the final narrative speaks directly to the client's pain points with maximum impact.",
+        icon: <svg className="w-10 h-10 text-pink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></svg>,
+        visualColor: "from-pink-900/40 to-pink-500/10",
+        visualMockup: "Synthesizing win-theme and value proposition...",
+        visualMockupColor: "text-pink-400 bg-pink-400/10 border-pink-400/20",
+        barWidths: ["80%", "80%"],
+    },
+    {
+        id: "step-5",
+        title: "5. Auto-Draft & Export",
+        description:
+            "BidForge's Document Generation Agent synthesizes the core narrative into a highly compliant, cohesive draft response. It formats the data perfectly, allowing your team to review, iterate, and export the final proposal in minutes.",
         icon: <FileCheck2 className="w-10 h-10 text-[#D4AF37]" />,
         visualColor: "from-amber-900/40 to-[#D4AF37]/20",
-        visualMockup: "Proposal Generation Complete. Ready for human review.",
+        visualMockup: "Proposal Output Complete. Ready for export.",
         visualMockupColor: "text-[#D4AF37] bg-[#D4AF37]/10 border-[#D4AF37]/20",
         barWidths: ["90%", "70%"],
     },
@@ -41,7 +63,7 @@ const steps = [
 
 function StepCard({ step }: { step: typeof steps[0] }) {
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.3 }}
@@ -92,7 +114,7 @@ function StepCard({ step }: { step: typeof steps[0] }) {
 
 export function HowItWorksScroll() {
     return (
-        <section className="relative z-10 bg-[#030303] border-t border-white/5 pb-20">
+        <section id="how-it-works" className="relative z-10 bg-[#030303] border-t border-white/5 pb-20">
             <div className="max-w-7xl mx-auto px-6 md:px-12 py-20">
                 {/* Section header */}
                 <div className="mb-16">

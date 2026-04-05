@@ -2,15 +2,16 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView, useMotionValue, useSpring } from 'framer-motion'
 import Lenis from 'lenis'
-import {
-
-  ArrowRight,
-} from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 // Custom Components
+import { Navbar } from '@/components/ui/mini-navbar'
 import { HeroGeometric } from '@/components/ui/shape-landing-hero'
 import { AnimatedFeatureGrid } from '@/components/ui/animated-feature-grid'
 import { HowItWorksScroll } from '@/components/ui/how-it-works-scroll'
+import { IntegrationsSection } from '@/components/ui/integrations-section'
+import { TechLogoCloud } from '@/components/ui/tech-logo-cloud'
+import { FAQSection } from '@/components/ui/faq-section'
 import { PremiumFooter } from '@/components/ui/premium-footer'
 
 export const Route = createFileRoute('/')({
@@ -42,26 +43,37 @@ function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-[#D4AF37]/30 overflow-hidden">
-      <HeroGeometric
-        title1="Win More Bids"
-        title2="with AI."
-      />
-      <div className="absolute z-50 top-6 right-6 md:top-8 md:right-8">
-        <Link to="/auth">
-          <button className="px-6 py-2.5 bg-white text-black font-semibold rounded-full hover:bg-[#D4AF37] transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] text-sm md:text-base cursor-pointer">
-            Sign In / Get Started
-          </button>
-        </Link>
-      </div>
+      {/* Sticky Navbar */}
+      <Navbar />
 
+      {/* Hero */}
+      <HeroGeometric
+        title1="Win More with"
+        title2="BidForge AI."
+      />
+
+      <TechLogoCloud />
+
+      {/* Features */}
       <AnimatedFeatureGrid />
 
+
+      {/* How It Works */}
       <HowItWorksScroll />
 
+      {/* Integrations */}
+      <IntegrationsSection />
+
+      {/* Metrics */}
       <MetricsSection />
 
+      {/* FAQ */}
+      <FAQSection />
+
+      {/* CTA */}
       <CTASection />
 
+      {/* Footer */}
       <PremiumFooter />
     </div>
   )
@@ -104,8 +116,9 @@ function MetricsSection() {
   return (
     <section className="py-32 relative z-10 overflow-hidden border-y border-white/5 bg-[#030303]">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-[#D4AF37]/5 blur-[120px] rounded-[100%] pointer-events-none" />
-      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10 gap-y-12">
-        <Counter value={3} suffix="x" text="Faster Pipeline" delay={0.1} />
+      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10 gap-y-12">
+        <Counter value={5} suffix="" text="AI Agents" delay={0.1} />
+        <Counter value={3} suffix="x" text="Faster Proposals" delay={0.2} />
         <Counter value={70} suffix="%" text="Manual Work Saved" delay={0.3} />
       </div>
     </section>

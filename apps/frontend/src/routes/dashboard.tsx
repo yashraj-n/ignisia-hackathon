@@ -224,7 +224,20 @@ function DashboardComponent() {
                         isLoading={isLoading}
                         onNewBid={() => setIsUploadModalOpen(true)}
                         onEditInventory={() => navigate({ to: '/inventory' })}
-                        onSelectRFP={(rfp: RFPItem) => navigate({ to: '/rfp/$id', params: { id: rfp.id } })}
+                        onSelectRFP={(rfp: RFPItem) => {
+                            if (rfp.status === 'processing') {
+                                navigate({
+                                    to: '/rfp-processing',
+                                    search: {
+                                        rfpId: rfp.id,
+                                        companyId: rfp.company_id,
+                                        companyName: 'Acme Corp' // Fallback for processed stream
+                                    }
+                                });
+                            } else {
+                                navigate({ to: '/rfp/$id', params: { id: rfp.id } });
+                            }
+                        }}
                         onAnalytics={() => navigate({ to: '/analytics' })}
                     />
 

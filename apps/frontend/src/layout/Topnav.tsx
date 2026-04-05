@@ -65,7 +65,13 @@ export default function Topnav() {
         </Link>
       </div>
 
-      <div className="flex-1"></div>
+      <div className="hidden md:flex flex-1 justify-center items-center">
+        <nav className="flex items-center gap-6 bg-[#111111]/50 px-6 py-2 rounded-full border border-white/[0.05]">
+          <Link to="/dashboard" className="text-sm font-medium text-gray-400 hover:text-white transition-colors" activeProps={{ className: "text-[#D4AF37] font-semibold" }}>Dashboard</Link>
+          <Link to="/analytics" className="text-sm font-medium text-gray-400 hover:text-white transition-colors" activeProps={{ className: "text-[#D4AF37] font-semibold" }}>Analytics</Link>
+          <Link to="/profile" className="text-sm font-medium text-gray-400 hover:text-white transition-colors" activeProps={{ className: "text-[#D4AF37] font-semibold" }}>Profile</Link>
+        </nav>
+      </div>
 
       <div className="flex items-center gap-4">
 

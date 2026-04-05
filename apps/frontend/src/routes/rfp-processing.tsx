@@ -52,8 +52,10 @@ function RFPProcessingComponent() {
   }
 
   const handleProceed = () => {
-    setCurrentStep('completed')
-    navigate({ to: '/dashboard' })
+    navigate({
+      to: '/rfp/$id',
+      params: { id: searchParams.rfpId }
+    })
   }
 
   const handleCancel = () => {

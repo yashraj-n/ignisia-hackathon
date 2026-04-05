@@ -22,14 +22,7 @@ const DUMMY_WEEKLY = [
   { day: 'Sun', count: 7 },
 ]
 
-const DUMMY_MONTHLY = [
-  { month: 'Jan', proposals: 42, accepted: 28, rejected: 8 },
-  { month: 'Feb', proposals: 56, accepted: 38, rejected: 12 },
-  { month: 'Mar', proposals: 71, accepted: 52, rejected: 9 },
-  { month: 'Apr', proposals: 63, accepted: 45, rejected: 11 },
-  { month: 'May', proposals: 89, accepted: 67, rejected: 14 },
-  { month: 'Jun', proposals: 95, accepted: 74, rejected: 10 },
-]
+
 
 const DUMMY_DISTRIBUTION = { accepted: 74, rejected: 10, pending: 18, processing: 6 }
 
@@ -41,22 +34,6 @@ const DUMMY_AGENT_ACTIVITY = [
   { label: 'Reviewer', value: 198, icon: CheckCircle, trend: +5 },
 ]
 
-const DUMMY_RESPONSE_TIME = [
-  { day: 'Mon', value: 2.1 },
-  { day: 'Tue', value: 1.8 },
-  { day: 'Wed', value: 1.5 },
-  { day: 'Thu', value: 2.4 },
-  { day: 'Fri', value: 1.3 },
-  { day: 'Sat', value: 1.9 },
-  { day: 'Sun', value: 2.8 },
-]
-
-const DUMMY_TOP_SOURCES = [
-  { name: 'procurement@acme.com', count: 34, pct: 36 },
-  { name: 'bids@globalcorp.io', count: 28, pct: 29 },
-  { name: 'rfp@techvault.com', count: 18, pct: 19 },
-  { name: 'vendor@megacorp.net', count: 15, pct: 16 },
-]
 
 // ── Glassmorphism card wrapper ───────────────────────────────────────────────
 
@@ -103,9 +80,6 @@ function StatCard({ label, value, change, icon: Icon, color, delay = 0 }: {
       transition={{ duration: 0.5, delay, ease: [0.23, 1, 0.32, 1] }}
       className="relative group bg-[#111111] border border-white/[0.08] rounded-2xl p-5 overflow-hidden"
     >
-      <div className="absolute top-0 right-0 w-24 h-24 opacity-[0.04]">
-        <Icon className="w-full h-full" style={{ color }} />
-      </div>
       <div className="flex items-center gap-3 mb-3">
         <div className="p-2 rounded-xl" style={{ backgroundColor: `${color}15` }}>
           <Icon className="w-5 h-5" style={{ color }} />
@@ -184,7 +158,7 @@ function DonutChart({ distribution }: { distribution: Record<string, number> }) 
 
 // ── Mini bar chart for monthly data ──────────────────────────────────────────
 
-function MonthlyBarChart({ data }: { data: typeof DUMMY_MONTHLY }) {
+function MonthlyBarChart({ data }: { data: { month: string, proposals: number, accepted: number, rejected: number }[] }) {
   const maxVal = Math.max(...data.map(d => d.proposals), 1)
   return (
     <div className="flex items-end gap-3 h-full w-full px-2">
@@ -281,16 +255,77 @@ function AnalyticsComponent() {
   // Derive agent activity from real RFP data
   const agentActivity = rfps.length > 0
     ? [
-        { label: 'Parser', value: rfps.length, icon: FileText, trend: +12 },
-        { label: 'Explorer', value: rfps.filter(r => !['parsed', 'processing'].includes(r.status)).length, icon: Target, trend: +8 },
-        { label: 'Summariser', value: rfps.filter(r => ['summarised', 'generating_document', 'completed'].includes(r.status)).length, icon: Sparkles, trend: -3 },
-        { label: 'Generator', value: rfps.filter(r => r.status === 'completed').length, icon: Zap, trend: +21 },
-        { label: 'Reviewer', value: accepted + rejected, icon: CheckCircle, trend: +5 },
-      ]
+      { label: 'Parser', value: rfps.length, icon: FileText, trend: +12 },
+      { label: 'Explorer', value: rfps.filter(r => !['parsed', 'processing'].includes(r.status)).length, icon: Target, trend: +8 },
+      { label: 'Summariser', value: rfps.filter(r => ['summarised', 'generating_document', 'completed'].includes(r.status)).length, icon: Sparkles, trend: -3 },
+      { label: 'Generator', value: rfps.filter(r => r.status === 'completed').length, icon: Zap, trend: +21 },
+      { label: 'Reviewer', value: accepted + rejected, icon: CheckCircle, trend: +5 },
+    ]
     : DUMMY_AGENT_ACTIVITY
 
-  const avgResponseTime = (DUMMY_RESPONSE_TIME.reduce((s, d) => s + d.value, 0) / DUMMY_RESPONSE_TIME.length).toFixed(1)
+  // Compute Response Time
+  let totalTime = 0;
+  let completedCount = 0;
+  const recentTimes: number[] = [];
+
+  rfps.forEach(rfp => {
+    if (rfp.status === 'completed' && rfp.createdAt && rfp.updatedAt) {
+      const ms = new Date(rfp.updatedAt).getTime() - new Date(rfp.createdAt).getTime();
+      if (ms > 0) {
+        totalTime += ms;
+        completedCount++;
+        recentTimes.push(ms / (1000 * 60 * 60)); // in hours
+      }
+    }
+  });
+
+  const avgResponseTime = completedCount > 0 ? (totalTime / completedCount / (1000 * 60)).toFixed(1) : '0'; // in minutes to make it more obvious for small amounts
+  const responseSparklineData = recentTimes.length > 0 ? recentTimes.slice(-7) : [0, 0, 0, 0, 0, 0, 0];
+
   const successRate = Math.round((accepted / Math.max(totalProposals, 1)) * 100)
+
+  // Compute Top Sources
+  const sourcesMap = new Map<string, number>();
+  let totalSources = 0;
+  rfps.forEach(rfp => {
+    const src = rfp.source_email || 'Manual Upload';
+    sourcesMap.set(src, (sourcesMap.get(src) || 0) + 1);
+    totalSources++;
+  });
+
+  const topSources = Array.from(sourcesMap.entries())
+    .map(([name, count]) => ({
+      name,
+      count,
+      pct: totalSources > 0 ? Math.round((count / totalSources) * 100) : 0
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 4);
+
+  // Compute Monthly Data (Last 6 months)
+  const monthlyDataMap = new Map<string, { month: string, proposals: number, accepted: number, rejected: number }>();
+  
+  // Initialize last 6 months
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    const monthStr = d.toLocaleString('default', { month: 'short' });
+    monthlyDataMap.set(monthStr, { month: monthStr, proposals: 0, accepted: 0, rejected: 0 });
+  }
+
+  rfps.forEach(rfp => {
+    if (!rfp.createdAt) return;
+    const d = new Date(rfp.createdAt);
+    const monthStr = d.toLocaleString('default', { month: 'short' });
+    if (monthlyDataMap.has(monthStr)) {
+      const data = monthlyDataMap.get(monthStr)!;
+      data.proposals++;
+      if (rfp.status === 'completed') data.accepted++;
+      if (['parse_rejected', 'explore_rejected', 'summarise_rejected', 'failed'].includes(rfp.status)) data.rejected++;
+    }
+  });
+
+  const monthlyTrends = Array.from(monthlyDataMap.values());
 
   return (
     <AppLayout>
@@ -321,9 +356,9 @@ function AnalyticsComponent() {
 
         {/* KPI Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <StatCard label="Total Proposals" value={totalProposals} change={12} icon={FileText} color="#3B82F6" delay={0} />
-          <StatCard label="Success Rate" value={`${successRate}%`} change={5} icon={Target} color="#22C55E" delay={0.1} />
-          <StatCard label="Avg Response" value={`${avgResponseTime}h`} change={-8} icon={Timer} color="#F59E0B" delay={0.2} />
+          <StatCard label="Total Proposals" value={totalProposals} icon={FileText} color="#3B82F6" delay={0} />
+          <StatCard label="Success Rate" value={`${successRate}%`} icon={Target} color="#22C55E" delay={0.1} />
+          <StatCard label="Avg Response" value={`${avgResponseTime}m`} icon={Timer} color="#F59E0B" delay={0.2} />
           <StatCard label="Active Agents" value={5} icon={Bot} color="#8B5CF6" delay={0.3} />
         </div>
 
@@ -342,7 +377,7 @@ function AnalyticsComponent() {
               </div>
             </div>
             <div className="flex-1 min-h-0 mt-4">
-              <MonthlyBarChart data={DUMMY_MONTHLY} />
+              <MonthlyBarChart data={monthlyTrends} />
             </div>
           </GlassCard>
 
@@ -422,11 +457,9 @@ function AnalyticsComponent() {
               <Clock className="w-5 h-5 text-gray-600" />
             </div>
             <div className="flex-1 flex flex-col justify-end">
-              <Sparkline data={DUMMY_RESPONSE_TIME.map(d => d.value)} color="#22D3EE" height={120} />
+              <Sparkline data={responseSparklineData} color="#22D3EE" height={120} />
               <div className="flex justify-between mt-2 px-1">
-                {DUMMY_RESPONSE_TIME.map(d => (
-                  <span key={d.day} className="text-[10px] text-gray-500 font-medium">{d.day}</span>
-                ))}
+                <span className="text-[10px] text-gray-500 font-medium">Recent items...</span>
               </div>
             </div>
           </GlassCard>
@@ -458,7 +491,7 @@ function AnalyticsComponent() {
               <ArrowUpRight className="w-5 h-5 text-gray-600" />
             </div>
             <div className="space-y-3 flex-1">
-              {DUMMY_TOP_SOURCES.map((source, i) => (
+              {topSources.length > 0 ? topSources.map((source, i) => (
                 <motion.div
                   key={source.name}
                   initial={{ opacity: 0 }}
@@ -482,7 +515,9 @@ function AnalyticsComponent() {
                   </div>
                   <span className="text-xs text-gray-400 font-semibold tabular-nums">{source.count}</span>
                 </motion.div>
-              ))}
+              )) : (
+                <div className="text-sm text-muted-foreground pt-4 text-center">No RFPs found yet</div>
+              )}
             </div>
           </GlassCard>
         </div>

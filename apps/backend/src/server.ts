@@ -21,6 +21,8 @@ import { exploreRfpRoute } from "./routes/rfp/explore-rfp";
 import { summariseRfpRoute } from "./routes/rfp/summarise-rfp";
 import { generateDocumentRfpRoute } from "./routes/rfp/generate-document-rfp";
 import { rfpStatsRoute } from "./routes/rfp/stats-rfps";
+import { parseRfpRoute } from "./routes/rfp/parse-rfp";
+import { resetRfpRoute } from "./routes/rfp/reset-rfp";
 
 const fastify = Fastify({
   loggerInstance: logger,
@@ -45,6 +47,8 @@ fastify.register(exploreRfpRoute);
 fastify.register(summariseRfpRoute);
 fastify.register(generateDocumentRfpRoute);
 fastify.register(rfpStatsRoute);
+fastify.register(parseRfpRoute);
+fastify.register(resetRfpRoute);
 
 const start = async () => {
   try {

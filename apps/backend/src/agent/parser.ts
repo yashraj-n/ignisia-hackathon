@@ -16,13 +16,8 @@ export type RFPParserResponse = {
 };
 
 export async function parseEmail(email: EmailEvent) {
-    const agent = createAgent({
-        model: flashLlm,
-        responseFormat: rfpParserResponseFormat,
-    });
-
     const content: ContentPart[] = [
-        { type: "text", text: `${RFP_PARSER_PROMPT}\n\n---\nEMAIL BODY:\n${email.text || email.html || "(empty)"}` },
+        { type: "text", text: `${RFP_PARSER_PROMPT}\n\n----- \nEMAIL BODY:\n${email.text || email.html || "(empty)"}` },
     ];
 
     if (email.attachmentsUrl?.length) {
@@ -30,5 +25,28 @@ export async function parseEmail(email: EmailEvent) {
         content.push(...parts);
     }
 
-    return await agent.invoke({ messages: [{ role: "user", content }] });
+    return await invokeParser(content);
+}
+
+export async function parseText(text: string) {
+    const content: ContentPart[] = [
+        { type: "text", text: `${RFP_PARSER_PROMPT}\n\n----- \nRAW TEXT:\n${text}` },
+    ];
+
+    return await invokeParser(content);
+}
+
+async function invokeParser(content: ContentPart[]) {
+    const agent = createAgent({
+        model: flashLlm,
+        responseFormat: rfpParserResponseFormat,
+    });
+
+    const result = await agent.invoke({ messages: [{ role: "user", content }] });
+
+    if (result && result.structuredResponse && Array.isArray(result.structuredResponse.missingFields)) {
+        result.structuredResponse.missingFields = [...new Set(result.structuredResponse.missingFields)];
+    }
+
+    return result;
 }

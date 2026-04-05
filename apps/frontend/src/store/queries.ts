@@ -136,6 +136,17 @@ export async function rejectRfp(id: string, reason: string): Promise<void> {
   }
 }
 
+export async function resetRfp(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/rfp/${id}/reset`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to reset RFP');
+  }
+}
+
 export const inventoryQueries = {
   list: () =>
     queryOptions({

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
-import { rfpQueries, exploreRfp, summariseRfp, generateDocument, rejectRfp } from '../store/queries'
+import { rfpQueries, exploreRfp, summariseRfp, generateDocument, rejectRfp, resetRfp } from '../store/queries'
 import type { RFPItem, RFPStatus, SummariserItem } from '../lib/types'
 import {
   Table,
@@ -41,7 +41,7 @@ export const Route = createFileRoute('/rfp/$id')({
 
 const STEPS = ['Parse', 'Explore', 'Summarise', 'Generate Document'] as const
 
-const POLLING_STATUSES: RFPStatus[] = ['exploring', 'summarising', 'generating_document']
+const POLLING_STATUSES: RFPStatus[] = ['processing', 'exploring', 'summarising', 'generating_document']
 const TERMINAL_STATUSES: RFPStatus[] = [
   'parse_rejected',
   'explore_rejected',
@@ -51,6 +51,7 @@ const TERMINAL_STATUSES: RFPStatus[] = [
 
 function statusToStep(status: RFPStatus): number {
   switch (status) {
+    case 'processing':
     case 'parsed':
     case 'exploring':
       return 0
@@ -204,6 +205,18 @@ function RFPDetailPage() {
     }
   }
 
+  async function handleReset() {
+    setActionLoading(true)
+    try {
+      await resetRfp(id)
+      await queryClient.invalidateQueries({ queryKey: ['rfps', id] })
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Loading / Error states
   // ---------------------------------------------------------------------------
@@ -278,7 +291,7 @@ function RFPDetailPage() {
                             'w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300',
                             completed && 'bg-[#D4AF37] text-black',
                             active &&
-                              'border-2 border-[#D4AF37] text-[#D4AF37] shadow-[0_0_18px_rgba(234,179,8,0.35)]',
+                            'border-2 border-[#D4AF37] text-[#D4AF37] shadow-[0_0_18px_rgba(234,179,8,0.35)]',
                             future && 'border border-white/15 text-white/30',
                           )}
                         >
@@ -335,7 +348,7 @@ function RFPDetailPage() {
           {/* ---------------------------------------------------------------- */}
           {/* Terminal state (rejected / failed)                               */}
           {/* ---------------------------------------------------------------- */}
-          {terminal && <TerminalPanel rfp={rfp} navigate={navigate} />}
+          {terminal && <TerminalPanel rfp={rfp} navigate={navigate} onReset={handleReset} actionLoading={actionLoading} />}
 
           {/* ---------------------------------------------------------------- */}
           {/* Step panels                                                      */}
@@ -368,7 +381,7 @@ function RFPDetailPage() {
           )}
 
           {!terminal && activeStep === 3 && (
-            <DocumentPanel rfp={rfp} navigate={navigate} />
+            <DocumentPanel rfp={rfp} navigate={navigate} onReset={handleReset} actionLoading={actionLoading} />
           )}
         </div>
 
@@ -398,8 +411,9 @@ function ParsePanel({
   onExplore: () => void
   onReject: () => void
 }) {
-  if (rfp.status === 'exploring') {
-    return <SpinnerCard message="Triggering exploration…" />
+  if (rfp.status === 'processing' || rfp.status === 'exploring') {
+    const isParsing = rfp.status === 'processing'
+    return <SpinnerCard message={isParsing ? "Refining parse results..." : "Triggering exploration..."} />
   }
 
   const parsed = rfp.parsed_output
@@ -644,9 +658,13 @@ function SummarisePanel({
 function DocumentPanel({
   rfp,
   navigate,
+  onReset,
+  actionLoading,
 }: {
   rfp: RFPItem
   navigate: ReturnType<typeof useNavigate>
+  onReset: () => void
+  actionLoading: boolean
 }) {
   return (
     <motion.div
@@ -684,6 +702,14 @@ function DocumentPanel({
           <ArrowLeft className="w-4 h-4" />
           Back to Dashboard
         </button>
+        <button
+          onClick={onReset}
+          disabled={actionLoading}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-amber-500/20 text-amber-400 hover:bg-amber-500/10 font-medium transition-all"
+        >
+          {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+          Re-process AI
+        </button>
       </div>
     </motion.div>
   )
@@ -696,9 +722,13 @@ function DocumentPanel({
 function TerminalPanel({
   rfp,
   navigate,
+  onReset,
+  actionLoading,
 }: {
   rfp: RFPItem
   navigate: ReturnType<typeof useNavigate>
+  onReset: () => void
+  actionLoading: boolean
 }) {
   const isFailed = rfp.status === 'failed'
   return (
@@ -729,13 +759,23 @@ function TerminalPanel({
         </p>
       )}
 
-      <button
-        onClick={() => navigate({ to: '/dashboard' })}
-        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-white hover:bg-white/5 font-medium transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Dashboard
-      </button>
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+        <button
+          onClick={() => navigate({ to: '/dashboard' })}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-white hover:bg-white/5 font-medium transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </button>
+        <button
+          onClick={onReset}
+          disabled={actionLoading}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-amber-500/20 text-amber-400 hover:bg-amber-500/10 font-medium transition-all"
+        >
+          {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+          Re-process AI
+        </button>
+      </div>
     </motion.div>
   )
 }

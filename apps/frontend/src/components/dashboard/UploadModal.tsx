@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
-import { FileUp, X, FileText, CheckCircle2, Loader2, Image, FileType2, AlertCircle } from 'lucide-react';
+import { FileUp, X, FileText, AlertCircle, Image, FileType2, Loader2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
@@ -18,15 +18,6 @@ interface CompanyInfo {
   login_email: string;
 }
 
-const steps = [
-  "Parsing RFP document...",
-  "Extracting principal requirements...",
-  "Searching for ambiguous requirements...",
-  "Identifying missing requirements...",
-  "Finalizing execution plan...",
-  "Generating summary...",
-];
-
 type AcceptedFileType = 'pdf' | 'docx' | 'image';
 
 function getFileType(file: File): AcceptedFileType {
@@ -41,26 +32,10 @@ function FileTypeIcon({ type, className }: { type: AcceptedFileType; className?:
   return <FileText className={className} />;
 }
 
-function FileTypeBadge({ type }: { type: AcceptedFileType }) {
-  const config = {
-    pdf: { label: 'PDF', color: 'text-[#EF4444] bg-[#EF4444]/10 border-[#EF4444]/20' },
-    docx: { label: 'DOCX', color: 'text-[#3B82F6] bg-[#3B82F6]/10 border-[#3B82F6]/20' },
-    image: { label: 'IMAGE', color: 'text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/20' },
-  };
-  const { label, color } = config[type];
-  return (
-    <span className={clsx('text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded border', color)}>
-      {label}
-    </span>
-  );
-}
-
 export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [fileType, setFileType] = useState<AcceptedFileType | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState(-1);
-  const [isComplete, setIsComplete] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -93,100 +68,78 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
     }
   }, [file]);
 
-  // Start processing when file is set
-  useEffect(() => {
-    if (file && currentStep === -1) {
-      setCurrentStep(0);
-    }
-  }, [file, currentStep]);
+  // Upload file immediately and navigate to processing page
+  const uploadAndProcess = async (selectedFile: File) => {
+    if (isUploading || !companyData) return;
 
-  // Upload file and navigate
-  useEffect(() => {
-    if (isUploading || !file || !companyData) return;
+    try {
+      setIsUploading(true);
+      setUploadError(null);
 
-    const uploadFile = async () => {
-      try {
-        setIsUploading(true);
-        setUploadError(null);
+      // Read file content
+      const fileContent = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsText(selectedFile);
+      });
 
-        // Read file content
-        const fileContent = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsText(file);
-        });
+      // Upload to backend
+      const token = localStorage.getItem('token');
+      const uploadRes = await fetch(`${API_BASE_URL}/api/rfp/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          company_id: companyData.id,
+          status: 'Processing',
+          information: fileContent,
+        }),
+      });
 
-        // Generate temporary RFP ID
-        const rfpId = `rfp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-        // Upload to backend
-        const token = localStorage.getItem('token');
-        const uploadRes = await fetch(`${API_BASE_URL}/api/rfp/upload`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            company_id: companyData.id,
-            status: 'Processing',
-            information: fileContent,
-          }),
-        });
-
-        if (!uploadRes.ok) {
-          throw new Error('Failed to upload RFP');
-        }
-
-        const uploadedRfp = await uploadRes.json();
-
-        setIsComplete(true);
-
-        // Navigate to processing page after 1 second
-        setTimeout(() => {
-          queryClient.invalidateQueries({ queryKey: ['rfps'] });
-          queryClient.invalidateQueries({ queryKey: ['rfp-stats'] });
-          
-          navigate({
-            to: '/rfp-processing',
-            search: {
-              rfpId: uploadedRfp.rfp?.id || rfpId,
-              companyId: companyData.id,
-              companyName: companyData.name,
-            },
-          });
-
-          onClose();
-          setFile(null);
-          setFileType(null);
-          setCurrentStep(-1);
-          setIsComplete(false);
-          setIsUploading(false);
-        }, 1500);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Failed to upload RFP';
-        setUploadError(message);
-        setIsUploading(false);
+      if (!uploadRes.ok) {
+        throw new Error('Failed to upload RFP');
       }
-    };
 
-    if (currentStep === steps.length) {
-      uploadFile();
+      const uploadedRfp = await uploadRes.json();
+
+      // Invalidate queries
+      queryClient.invalidateQueries({ queryKey: ['rfps'] });
+      queryClient.invalidateQueries({ queryKey: ['rfp-stats'] });
+
+      // Navigate to the authentic processing pipeline
+      if (uploadedRfp.rfp?.id) {
+        navigate({
+          to: '/rfp-processing',
+          search: {
+            rfpId: uploadedRfp.rfp.id,
+            companyId: companyData.id,
+            companyName: companyData.name
+          },
+        });
+      } else {
+        throw new Error('Upload succeeded but no RFP ID was returned.');
+      }
+
+      // Clean up modal state
+      onClose();
+      resetState();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to upload RFP';
+      setUploadError(message);
+      setIsUploading(false);
     }
-  }, [currentStep, file, companyData, isUploading, navigate, queryClient, onClose]);
+  };
 
-  // Step progression
-  useEffect(() => {
-    if (isUploading || !file) return;
-
-    if (currentStep >= 0 && currentStep < steps.length) {
-      const timer = setTimeout(() => {
-        setCurrentStep(prev => prev + 1);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [currentStep, file, isUploading]);
+  const resetState = () => {
+    setFile(null);
+    setFileType(null);
+    setIsUploading(false);
+    setUploadError(null);
+    setImagePreview(null);
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -197,6 +150,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
       'image/webp': ['.webp'],
     },
     maxFiles: 1,
+    disabled: isUploading,
     onDrop: acceptedFiles => {
       if (acceptedFiles.length > 0) {
         const f = acceptedFiles[0];
@@ -207,13 +161,15 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
   });
 
   const handleClose = () => {
-    if ((currentStep >= 0 && !isComplete) || isUploading) return;
+    if (isUploading) return;
     onClose();
-    setFile(null);
-    setFileType(null);
-    setCurrentStep(-1);
-    setIsComplete(false);
-    setUploadError(null);
+    resetState();
+  };
+
+  const handleUpload = () => {
+    if (file && companyData) {
+      uploadAndProcess(file);
+    }
   };
 
   return (
@@ -239,7 +195,7 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
               <h2 className="text-xl font-bold text-white tracking-tight">Upload RFP Document</h2>
               <button
                 onClick={handleClose}
-                disabled={currentStep >= 0 && !isComplete || isUploading}
+                disabled={isUploading}
                 className="p-2 text-muted-foreground hover:text-white hover:bg-white/5 rounded-full transition-all duration-200 disabled:opacity-50"
               >
                 <X className="w-5 h-5" />
@@ -261,135 +217,121 @@ export default function UploadModal({ isOpen, onClose }: UploadModalProps) {
                 </motion.div>
               )}
 
-              {!file ? (
-                /* ── Drop Zone ── */
-                <div
-                  {...getRootProps()}
-                  className={clsx(
-                    "border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-500 relative overflow-hidden group",
-                    isDragActive
-                      ? "border-primary bg-primary/5 shadow-[inset_0_0_30px_rgba(234,179,8,0.1)]"
-                      : "border-white/10 hover:border-primary/40 hover:bg-white/5"
-                  )}
-                >
-                  <input {...getInputProps()} />
+              {/* Drop Zone */}
+              <div
+                {...getRootProps()}
+                className={clsx(
+                  "border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-500 relative overflow-hidden group",
+                  isUploading && "pointer-events-none opacity-50",
+                  isDragActive
+                    ? "border-primary bg-primary/5 shadow-[inset_0_0_30px_rgba(234,179,8,0.1)]"
+                    : file
+                    ? "border-[#D4AF37]/40 bg-[#D4AF37]/5"
+                    : "border-white/10 hover:border-primary/40 hover:bg-white/5"
+                )}
+              >
+                <input {...getInputProps()} />
 
-                  {isDragActive && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"
-                    />
-                  )}
-
+                {isDragActive && (
                   <motion.div
-                    animate={isDragActive ? { y: [0, -8, 0], scale: 1.1 } : {}}
-                    transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
-                    className="w-16 h-16 rounded-full bg-[#1A1A1A] border border-white/5 flex items-center justify-center mb-6 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] group-hover:border-primary/40 transition-all duration-300 relative z-10"
-                  >
-                    <FileUp className={clsx("w-8 h-8 transition-colors duration-300", isDragActive ? "text-primary" : "text-muted-foreground group-hover:text-white")} />
-                  </motion.div>
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"
+                  />
+                )}
 
-                  <h3 className={clsx("text-lg font-semibold mb-2 transition-colors duration-300", isDragActive ? "text-primary" : "text-white")}>
-                    {isDragActive ? "Release to process" : "Drop your file here"}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-6 max-w-[220px] mx-auto">
-                    Supports PDF, DOCX, PNG, JPG and WebP files
-                  </p>
-
-                  {/* Supported types */}
-                  <div className="flex flex-wrap gap-2 justify-center relative z-10">
-                    {[
-                      { label: 'PDF', color: 'text-[#EF4444] bg-[#EF4444]/10 border-[#EF4444]/20' },
-                      { label: 'DOCX', color: 'text-[#3B82F6] bg-[#3B82F6]/10 border-[#3B82F6]/20' },
-                      { label: 'PNG', color: 'text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/20' },
-                      { label: 'JPG', color: 'text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/20' },
-                      { label: 'WEBP', color: 'text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/20' },
-                    ].map(({ label, color }) => (
-                      <span
-                        key={label}
-                        className={clsx(
-                          'text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded border transition-all duration-300',
-                          color,
-                          'group-hover:opacity-100'
-                        )}
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                /* ── Processing View ── */
-                <div className="py-4">
-                  {/* File info card */}
-                  <div className="flex items-center gap-4 bg-[#1A1A1A] p-4 rounded-xl border border-white/5 mb-6">
-                    {/* Image preview or icon */}
+                {file ? (
+                  /* File selected preview */
+                  <div className="flex flex-col items-center relative z-10">
                     {fileType === 'image' && imagePreview ? (
-                      <div className="w-14 h-14 rounded-lg overflow-hidden border border-white/10 shrink-0">
+                      <div className="w-20 h-20 rounded-xl overflow-hidden border border-white/10 mb-4 shadow-lg">
                         <img src={imagePreview} alt="preview" className="w-full h-full object-cover" />
                       </div>
                     ) : (
                       <div className={clsx(
-                        'p-3 rounded-lg shrink-0',
+                        'w-16 h-16 rounded-full flex items-center justify-center mb-4 shadow-lg',
                         fileType === 'pdf' ? 'bg-[#EF4444]/15 text-[#EF4444]' :
                         fileType === 'docx' ? 'bg-[#3B82F6]/15 text-[#3B82F6]' :
                         'bg-primary/15 text-primary'
                       )}>
-                        <FileTypeIcon type={fileType!} className="w-6 h-6" />
+                        <FileTypeIcon type={fileType!} className="w-8 h-8" />
                       </div>
                     )}
-
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-medium truncate text-sm">{file.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                        {fileType && <FileTypeBadge type={fileType} />}
-                      </div>
-                    </div>
-
-                    {isComplete && <CheckCircle2 className="w-6 h-6 text-[#22C55E] shrink-0" />}
+                    <p className="text-white font-semibold text-sm mb-1">{file.name}</p>
+                    <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p className="text-xs text-[#D4AF37] mt-3">Click or drop another file to replace</p>
                   </div>
+                ) : (
+                  /* Empty drop zone */
+                  <>
+                    <motion.div
+                      animate={isDragActive ? { y: [0, -8, 0], scale: 1.1 } : {}}
+                      transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
+                      className="w-16 h-16 rounded-full bg-[#1A1A1A] border border-white/5 flex items-center justify-center mb-6 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] group-hover:border-primary/40 transition-all duration-300 relative z-10"
+                    >
+                      <FileUp className={clsx("w-8 h-8 transition-colors duration-300", isDragActive ? "text-primary" : "text-muted-foreground group-hover:text-white")} />
+                    </motion.div>
 
-                  {/* Steps */}
-                  <div className="space-y-3">
-                    {steps.map((step, index) => {
-                      const isPast = currentStep > index;
-                      const isCurrent = currentStep === index;
-                      const isPending = currentStep < index;
+                    <h3 className={clsx("text-lg font-semibold mb-2 transition-colors duration-300", isDragActive ? "text-primary" : "text-white")}>
+                      {isDragActive ? "Release to process" : "Drop your file here"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-6 max-w-[220px] mx-auto">
+                      Supports PDF, DOCX, PNG, JPG and WebP files
+                    </p>
 
-                      return (
-                        <motion.div
-                          key={step}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{
-                            opacity: isPending ? 0.4 : 1,
-                            x: 0,
-                            scale: isCurrent ? 1.02 : 1,
-                          }}
+                    {/* Supported types */}
+                    <div className="flex flex-wrap gap-2 justify-center relative z-10">
+                      {[
+                        { label: 'PDF', color: 'text-[#EF4444] bg-[#EF4444]/10 border-[#EF4444]/20' },
+                        { label: 'DOCX', color: 'text-[#3B82F6] bg-[#3B82F6]/10 border-[#3B82F6]/20' },
+                        { label: 'PNG', color: 'text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/20' },
+                        { label: 'JPG', color: 'text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/20' },
+                        { label: 'WEBP', color: 'text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/20' },
+                      ].map(({ label, color }) => (
+                        <span
+                          key={label}
                           className={clsx(
-                            "flex items-center gap-3 p-3 rounded-lg transition-colors border",
-                            isCurrent ? "bg-primary/10 border-primary/30" : "border-transparent"
+                            'text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded border transition-all duration-300',
+                            color,
+                            'group-hover:opacity-100'
                           )}
                         >
-                          {isPast ? (
-                            <CheckCircle2 className="w-5 h-5 text-[#22C55E] shrink-0" />
-                          ) : isCurrent ? (
-                            <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
-                          ) : (
-                            <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 shrink-0" />
-                          )}
-                          <span className={clsx(
-                            "text-sm font-medium",
-                            isCurrent ? "text-primary" : isPast ? "text-white" : "text-muted-foreground"
-                          )}>
-                            {step}
-                          </span>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </div>
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Upload Button — shown when file is selected */}
+              {file && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-6"
+                >
+                  <button
+                    onClick={handleUpload}
+                    disabled={isUploading || !companyData}
+                    className="w-full py-3.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#E5B80B] text-black font-bold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <FileUp className="w-4 h-4" />
+                        Upload Document
+                      </>
+                    )}
+                  </button>
+                  <p className="text-xs text-muted-foreground text-center mt-3">
+                    You will be redirected to the actual RFP processing pipeline
+                  </p>
+                </motion.div>
               )}
             </div>
 
